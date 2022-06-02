@@ -130,6 +130,19 @@ def patch_copy_tpu_client_py(dst_dir):
     with open(os.path.join(dst_dir, "tpu_client.py"), "w") as f:
       f.write(src)
 
+
+# ipu_xla_client.py
+def patch_copy_ipu_xla_client_py(dst_dir):
+  with open(r.Rlocation("org_tensorflow/tensorflow/compiler/plugin/poplar/xla_client/python/ipu_xla_client.py")) as f:
+    src = f.read()
+    src = src.replace("from tensorflow.compiler.xla.python import xla_client",
+                      "from . import xla_client")
+    src = src.replace("from tensorflow.compiler.plugin.poplar.xla_client.python import ipu_xla_client_pybind as _ipu_xla",
+                      "from . import ipu_xla_client_pybind as _ipu_xla")
+    with open(os.path.join(dst_dir, "ipu_xla_client.py"), "w") as f:
+      f.write(src)
+
+
 def verify_mac_libraries_dont_reference_chkstack():
   """Verifies that xla_extension.so doesn't depend on ____chkstk_darwin.
 
@@ -201,6 +214,11 @@ def prepare_wheel(sources_path):
     copy_file(f"__main__/jaxlib/cuda/_cusparse.{pyext}", dst_dir=cuda_dir)
   if exists(f"__main__/jaxlib/rocm/_hipsparse.{pyext}"):
     copy_file(f"__main__/jaxlib/rocm/_hipsparse.{pyext}", dst_dir=rocm_dir)
+
+  # IPU XLA client
+  if r.Rlocation("org_tensorflow/tensorflow/compiler/plugin/poplar/xla_client/python/ipu_xla_client_pybind.so") is not None:
+    copy_to_jaxlib(r.Rlocation("org_tensorflow/tensorflow/compiler/plugin/poplar/xla_client/python/ipu_xla_client_pybind.so"))
+    patch_copy_ipu_xla_client_py(jaxlib_dir)
 
 
   mlir_dir = os.path.join(jaxlib_dir, "mlir")

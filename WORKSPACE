@@ -1,17 +1,24 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 # To update TensorFlow to a new revision,
 # a) update URL and strip_prefix to the new git commit hash
 # b) get the sha256 hash of the commit by running:
 #    curl -L https://github.com/tensorflow/tensorflow/archive/<git hash>.tar.gz | sha256sum
 #    and update the sha256 with the result.
-http_archive(
+# http_archive(
+#    name = "org_tensorflow",
+#    sha256 = "29bf0018cef471649424cc76c5ea8601464252ce7a0e88c69a46aa9a0030c783",
+#    strip_prefix = "tensorflow-128e8923b97ee054b8f5d4890cd8f41b06b74d7d",
+#    urls = [
+#        "https://github.com/tensorflow/tensorflow/archive/128e8923b97ee054b8f5d4890cd8f41b06b74d7d.tar.gz",
+#    ],
+#)
+
+git_repository(
     name = "org_tensorflow",
-    sha256 = "6b2b714e00db7b82fd79aaa1deacd321c7f0aeab8b17cf8c32062a80070842a8",
-    strip_prefix = "tensorflow-579c67bd60220fe66a29318191f0850ff0aa825f",
-    urls = [
-        "https://github.com/tensorflow/tensorflow/archive/579c67bd60220fe66a29318191f0850ff0aa825f.tar.gz",
-    ],
+    branch = "jaxlibv0.3.15/sdk-release-3.0-lean-jax",
+    remote = "git@github.com:graphcore/tensorflow-jax-poc.git"
 )
 
 # For development, one often wants to make changes to the TF repository as well

@@ -39,6 +39,8 @@ from jax._src import util, traceback_util
 from jax.config import config
 import numpy as np
 
+from jaxlib import ipu_xla_client
+
 iree: Optional[Any]
 
 try:
@@ -209,6 +211,9 @@ register_backend_factory('cpu',
                          partial(xla_client.make_cpu_client, use_tfrt=True),
                          priority=0)
 register_backend_factory('tpu_driver', _make_tpu_driver_client,
+                         priority=100)
+# Registering IPU client in the same way as GPU/TPU.
+register_backend_factory('ipu', ipu_xla_client.make_ipu_client,
                          priority=100)
 
 

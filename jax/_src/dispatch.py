@@ -824,8 +824,9 @@ class XlaComputation(stages.XlaLowering):
         self._executable = XlaCompiledComputation.from_trivial_jaxpr(
             **self.compile_args)
       else:
+        # Forcing HLO use on IPU. MHLO not supported at the moment.
         self._executable = XlaCompiledComputation.from_xla_computation(
-            self.name, self._hlo, self._in_type, self._out_type,
+            self.name, self.hlo(), self._in_type, self._out_type,
             **self.compile_args)
 
     return self._executable
