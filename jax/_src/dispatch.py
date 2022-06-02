@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# This file has been modified by Graphcore Ltd.
 
 # Primitive dispatch and jit dispatch.
 from __future__ import annotations
@@ -846,8 +847,9 @@ class XlaComputation(stages.XlaLowering):
         self._executable = XlaCompiledComputation.from_trivial_jaxpr(
             **self.compile_args)
       else:
+        # Using HLO representation on IPU. MHLO not yet supported.
         self._executable = XlaCompiledComputation.from_xla_computation(
-            self.name, self._hlo, self._in_type, self._out_type,
+            self.name, self.hlo(), self._in_type, self._out_type,
             **self.compile_args)
 
     return self._executable

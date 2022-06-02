@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# This file has been modified by Graphcore Ltd.
 
 # JAX is Autograd and XLA
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@local_config_cuda//cuda:build_defs.bzl", "if_cuda")
 load("@local_config_rocm//rocm:build_defs.bzl", "if_rocm")
+load("@local_config_poplar//poplar:build_defs.bzl", "if_poplar")
 load("//jaxlib:jax.bzl", "if_windows")
 
 licenses(["notice"])  # Apache 2
@@ -55,6 +57,8 @@ py_binary(
         "@local_config_cuda//cuda:cuda-nvvm",
     ]) + if_rocm([
         "//jaxlib/rocm:rocm_gpu_support",
+    ]) + if_poplar([
+        "@org_tensorflow//tensorflow/compiler/plugin/poplar/xla_client:ipu_xla_client",
     ]),
     deps = ["@bazel_tools//tools/python/runfiles"],
 )
