@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# This file has been modified by Graphcore Ltd.
 
 import builtins
 import enum
@@ -4716,3 +4717,25 @@ def _empty_lower(ctx, *, eltype):
     return eltype.empty_mlir(ctx)
   return mlir.ir_constants(np.zeros((), np.dtype(eltype)))
 mlir.register_lowering(empty_p, _empty_lower)
+
+
+# IPU specific MLIR translations.
+
+# IPU not supporting custom `reduce op`. Using a more classic argminmax implementation.
+def _compute_argminmax_ipu(reduce_op, a, *, index_dtype, axes):
+  axis, = axes
+  idxs = tie_in(a, broadcasted_iota(index_dtype, a.shape, axis))
+  maxval = np.array(dtypes.iinfo(index_dtype).max, dtype=index_dtype)
+  maxval = broadcast(tie_in(a, maxval), a.shape)
+  maxvals = expand_dims(reduce_op(a, (axis,)), (axis,))
+  mask_idxs = select(eq(a, maxvals) | ne(a, a), idxs, maxval)
+  return _reduce_min(mask_idxs, (axis,))
+
+
+mlir.register_lowering(argmin_p, mlir.cache_lowering(mlir.lower_fun(
+  partial(_compute_argminmax_ipu, _reduce_min),
+  multiple_results=False)), "ipu")
+
+mlir.register_lowering(argmax_p, mlir.cache_lowering(mlir.lower_fun(
+  partial(_compute_argminmax_ipu, _reduce_max),
+  multiple_results=False)), "ipu")
