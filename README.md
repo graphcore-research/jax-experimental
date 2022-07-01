@@ -1,3 +1,29 @@
+> # JAX for IPU
+> 
+>  **:warning: Graphcore internal, not to be shown to any customer**
+>
+> This is JAX, for [GraphCore](graphcore.ai)'s Intelligence Processing Unit (IPU).
+> 
+> It's a very thin fork of http://github.com/google/jax, which is where you should go if you've
+> landed here unintentionally.  (Or visit Graphcore and come back if you're curious about 
+> running JAX on the world's best AI accelerator).
+> 
+> The key differences in this fork are that we show how 
+> to [build JAX for IPU](https://github.com/graphcore/jax/wiki/README-for-IPU) 
+> and we provide some ipu-specific [examples](https://github.com/graphcore/jax/tree/jax-v0.2.12-ipu/examples/ipu) (although most JAX code should "just work" on IPU)
+>
+> Known limitations (GC folk, these are to be largely removed before any public beta)
+> * Multi-device support is clunky
+> * No `pmap`/`pjit` (expected with TF2.7)
+> * device.transfer_to_infeed(), lax.infeed/lax.outfeed
+> * Various dtypes, e.g. int16
+> 
+> This is very much a research project, so keep in touch on 
+[#wg-jax-scoping](https://graphcore.slack.com/channels/wg-jax-scoping) as you experiment.
+>
+> -------------------------------------
+&nbsp;
+
 <div align="center">
 <img src="https://raw.githubusercontent.com/google/jax/main/images/jax_logo_250px.png" alt="logo"></img>
 </div>
