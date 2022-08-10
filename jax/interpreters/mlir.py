@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# This file has been modified by Graphcore Ltd.
 
 # Lowering and execution path that converts jaxprs into the MLIR MHLO/CHLO
 # dialects.
@@ -576,7 +577,8 @@ def lower_jaxpr_to_module(
         sharded_aval(out_aval, out_sharding)
         for out_aval, out_sharding in zip(out_avals, result_shardings)
     ]
-  platforms_with_donation = ("cuda", "rocm", "tpu")
+  # Donated buffers supported on IPU, as always-live buffers on device.
+  platforms_with_donation = ("cuda", "rocm", "tpu", "ipu")
   if platform in platforms_with_donation:
     input_output_aliases, donated_args = _set_up_aliases(
         in_avals, out_avals, donated_args)
