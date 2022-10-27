@@ -66,6 +66,20 @@ class IpuBasicsTest(jtu.JaxTestCase):
     c = jit_add(a, b)
     self.assertAllClose(c, a + b)
 
+
+  def test_argmin_argmax(self):
+    @partial(jax.jit, backend="ipu")
+    def argminmax(v):
+      return (lax.argmin(v, axis=0, index_dtype=np.int32), 
+              lax.argmax(v, axis=0, index_dtype=np.int32))
+
+    a = np.array([1, 0, 5, 3], dtype=np.float32)
+    # From JAX 0.2.26, can used any more `_argminmax_gpu_translation_rule` translation rule on IPU.
+    # TODO: find alternative way of supporting argmin/argmax?
+    raise SkipTest("IPU XLA `reduce.0` (reduce) not implemented")
+    argminmax(a)
+    
+
   def test_linear_layer(self):
     @partial(jax.jit, backend="ipu")
     def func(x, w, b):
