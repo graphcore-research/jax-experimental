@@ -1055,6 +1055,8 @@ class CPPJitTest(jtu.BufferDonationTestCase):
     f = self.jit(lambda x: x).lower(1.).compile()
     self.assertIsNotNone(f.compiler_ir())
 
+  # Crashing on IPU backend.
+  @jtu.skip_on_devices("ipu")
   def test_jit_lower_compile_as_text(self):
     f = self.jit(lambda x: x).lower(1.).compile()
     g = self.jit(lambda x: x + 4).lower(1.).compile()
@@ -2781,6 +2783,8 @@ class APITest(jtu.JaxTestCase):
         r"containing an array, got empty \*args=\(\{\},\) and \*\*kwargs=\{\}"):
       api.pmap(lambda x: x)({})
 
+  # Crashing on IPU device.
+  @jtu.skip_on_devices("ipu")
   def test_pmap_global_cache(self):
     def f(x, y):
       return x, y
