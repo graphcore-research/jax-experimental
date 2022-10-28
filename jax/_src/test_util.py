@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# This file has been modified by Graphcore Ltd.
 
 from contextlib import contextmanager
 import inspect
@@ -19,7 +20,7 @@ from functools import partial
 import re
 import os
 import textwrap
-from typing import Dict, List, Generator, Sequence, Tuple, Union
+from typing import Dict, List, Generator, Sequence, Tuple, Union, Callable
 import unittest
 import warnings
 import zlib
@@ -219,6 +220,9 @@ def supported_dtypes():
   if device_under_test() == "tpu":
     types = {np.bool_, np.int8, np.int16, np.int32, np.uint8, np.uint16,
              np.uint32, _dtypes.bfloat16, np.float16, np.float32, np.complex64}
+  if device_under_test() == "ipu":
+    # Focus on key IPU dtypes to speed-up testing.
+    types = {np.bool_, np.int32, np.float16, np.float32}
   elif device_under_test() == "iree":
     types = {np.bool_, np.int8, np.int16, np.int32, np.uint8, np.uint16,
              np.uint32, np.float32}
@@ -260,6 +264,21 @@ def skip_on_devices(*disabled_devices):
         test_name = getattr(test_method, '__name__', '[unknown test]')
         raise unittest.SkipTest(
           f"{test_name} not supported on device with tags {device_tags}.")
+      return test_method(self, *args, **kwargs)
+    return test_method_wrapper
+  return skip
+
+def skip_on_device_if(disabled_device: str, condition: Callable[[dict], bool]):
+  """A decorator for test methods to skip test cases on a certain device according to a
+  condition."""
+  def skip(test_method):        # pylint: disable=missing-docstring
+    @functools.wraps(test_method)
+    def test_method_wrapper(self, *args, **kwargs):
+      device = device_under_test()
+      if device == disabled_device:
+        if condition(kwargs):
+          raise unittest.SkipTest(
+            f"This test case is not supported on {device}")
       return test_method(self, *args, **kwargs)
     return test_method_wrapper
   return skip
