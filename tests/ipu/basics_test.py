@@ -71,14 +71,14 @@ class IpuBasicsTest(jtu.JaxTestCase):
   def test_argmin_argmax(self):
     @partial(jax.jit, backend="ipu")
     def argminmax(v):
-      return (lax.argmin(v, axis=0, index_dtype=np.int32), 
+      return (lax.argmin(v, axis=0, index_dtype=np.int32),
               lax.argmax(v, axis=0, index_dtype=np.int32))
 
     a = np.array([1, 0, 5, 3], dtype=np.float32)
     amin, amax = argminmax(a)
     assert amin == 1
     assert amax == 2
-    
+
 
   def test_linear_layer(self):
     @partial(jax.jit, backend="ipu")
