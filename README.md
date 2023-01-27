@@ -54,7 +54,14 @@ output = ipu_function(data)
 print(output, output.device())
 ```
 
-Useful environment variables:
+**Additional JAX on IPU examples:**
+
+* [JAX on IPU quickstart notebook](ipu/examples/ipu_quickstart.ipynb);
+* [MNIST classifier training on IPU](ipu/examples/mnist_classifier.py)
+* [MNIST classifier training on IPU, with infeeds](ipu/examples/mnist_classifier_with_infeed.py)
+
+
+**Useful environment variables:**
 
 * Use IPU model: `TF_POPLAR_FLAGS='--use_ipu_model --ipu_model_tiles=8'`
 * Configure the default JAX backend: `JAX_PLATFORM_NAME=cpu|gpu|tpu|ipu`

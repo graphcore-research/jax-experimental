@@ -41,7 +41,7 @@ def update(opt_state, batch):
 ```
 will result into an IPU jitted function where only the `batch` is transfered at every call from host to device, and the `opt_state` remains on the IPU SRAM (after being transfered at the first call). The training loop does not require any additional modification.
 
-Please refer to the [MNIST example](TODO_link) for a full example of buffer donation on the IPU.
+Please refer to the [MNIST example](../examples/mnist_classifier.py) for a full example of buffer donation on the IPU.
 
 ## Use infeed/outfeed to speed-up host data transfer
 
@@ -80,4 +80,4 @@ The main idea behind the use of JAX infeed/outfeed is to be able to directly run
 
 As previously said, the use of infeed/outfeed is only beneficial to users who wants to obtain the maximal performance. In most cases, buffer donation with `donate_argnums` would be enough, and has the benefit of keeping the training loop much simpler.
 
-Please refer to the [MNIST with infeeds example](TODO_link) for a full example of how to use infeeds on IPUs.
+Please refer to the [MNIST with infeeds example](../examples/mnist_classifier_with_infeed.py) for a full example of how to use infeeds on IPUs.
