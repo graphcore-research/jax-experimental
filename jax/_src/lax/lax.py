@@ -4739,3 +4739,64 @@ mlir.register_lowering(argmin_p, mlir.cache_lowering(mlir.lower_fun(
 mlir.register_lowering(argmax_p, mlir.cache_lowering(mlir.lower_fun(
   partial(_compute_argminmax_ipu, _reduce_max),
   multiple_results=False)), "ipu")
+
+# IPU sorting: doesn't use default JAX integer comparison, but keep float dtypes.
+# NOTE: need to copy a bit of code. Would be better to have a more flexible way?
+
+def _ipu_float_to_int_for_sort(x):
+  # On IPU, keeping float dtypes instead of convert (hw has special instructions).
+  # TODO: Supporting sorting of int16 using int32?
+  return x
+
+
+def _ipu_operands_to_keys(*operands, num_keys=1):
+  assert len(operands) >= 2 and len(operands) % 2 == 0, operands
+  assert len(operands) // 2 >= num_keys, (operands, num_keys)
+  x_keys, y_keys = [], []
+  for x, y in zip(operands[:2*num_keys:2], operands[1:2*num_keys:2]):
+    assert x.dtype == y.dtype, (x.dtype, y.dtype)
+    if dtypes.issubdtype(x.dtype, np.complexfloating):
+      x_keys.extend([_ipu_float_to_int_for_sort(real(x)), _ipu_float_to_int_for_sort(imag(x))])
+      y_keys.extend([_ipu_float_to_int_for_sort(real(y)), _ipu_float_to_int_for_sort(imag(y))])
+    elif dtypes.issubdtype(x.dtype, np.floating):
+      x_keys.append(_ipu_float_to_int_for_sort(x))
+      y_keys.append(_ipu_float_to_int_for_sort(y))
+    else:
+      x_keys.append(x)
+      y_keys.append(y)
+  return x_keys, y_keys
+
+
+def _sort_ipu_lt_comparator(*operands, num_keys=1):
+  x_keys, y_keys = _ipu_operands_to_keys(*operands, num_keys=num_keys)
+  p = None
+  for xk, yk in zip(x_keys[::-1], y_keys[::-1]):
+    p = (bitwise_or(lt(xk, yk), bitwise_and(eq(xk, yk), p)) if p is not None
+         else lt(xk, yk))
+  return p
+
+
+def _sort_ipu_lower(ctx, *operands, dimension, is_stable, num_keys):
+  assert all(isinstance(x, core.ShapedArray) for x in ctx.avals_in), ctx.avals_in
+  sort = mhlo.SortOp([mlir.aval_to_ir_type(aval) for aval in ctx.avals_out],
+                     mlir.flatten_lowering_ir_args(operands),
+                     dimension=mlir.i64_attr(dimension),
+                     is_stable=ir.BoolAttr.get(is_stable))
+  scalar_avals = [aval.update(shape=()) for aval in ctx.avals_in]
+  scalar_types = safe_map(mlir.aval_to_ir_type, scalar_avals)
+  comparator = sort.comparator.blocks.append(
+      *util.flatten(zip(scalar_types, scalar_types)))
+  with ir.InsertionPoint(comparator):
+    # IPU sort comparator, keeping float arrays.
+    lower_comparator = mlir.lower_fun(partial(_sort_ipu_lt_comparator),
+                                      multiple_results=False)
+    sub_ctx = ctx.replace(primitive=None,
+                          avals_in=util.flatten(zip(scalar_avals, scalar_avals)),
+                          avals_out=[core.ShapedArray((), np.bool_)])
+
+    out = lower_comparator(sub_ctx, *[[a] for a in comparator.arguments],
+                           num_keys=num_keys)
+    mhlo.ReturnOp(util.flatten(out))
+  return sort.results
+
+mlir.register_lowering(sort_p, _sort_ipu_lower, "ipu")

@@ -68,7 +68,7 @@ class IpuBasicsTest(jtu.JaxTestCase):
     self.assertAllClose(c, a + b)
 
 
-  def test_argmin_argmax(self):
+  def test_lax_argmin_argmax(self):
     @partial(jax.jit, backend="ipu")
     def argminmax(v):
       return (lax.argmin(v, axis=0, index_dtype=np.int32),
@@ -90,6 +90,29 @@ class IpuBasicsTest(jtu.JaxTestCase):
     b = np.random.normal(size=[3, 3])
     r = func(x, w, b)
     self.assertAllClose(r, w @ x + b)
+
+
+  def test_lax_sort(self):
+    @partial(jax.jit, backend="ipu")
+    def sort_fn(v):
+      return lax.sort(v)
+
+    a = np.array([1, 0, 5, -1], dtype=np.float32)
+    asorted = sort_fn(a)
+    self.assertAllClose(asorted, np.sort(a))
+
+
+  def test_lax_sort_key_val(self):
+    @partial(jax.jit, backend="ipu")
+    def sort_key_val_fn(k, v):
+      return lax.sort_key_val(k, v)
+
+    keys = np.array([1, 0, 5, -1], dtype=np.float32)
+    values = np.array([0, 1, 2, 3], dtype=np.int32)
+
+    ks, vs = sort_key_val_fn(keys, values)
+    self.assertAllClose(ks, np.sort(np.asarray(keys)))
+    self.assertAllClose(vs, np.array([3, 1, 0, 2]))
 
 
 if __name__ == "__main__":
