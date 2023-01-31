@@ -28,10 +28,10 @@ There is no at the moment **no plan** to tackle these issues. Use at your own ri
 
 ## Installation
 
-The experimental JAX wheels require Ubuntu 20.04, Graphcore **Poplar SDK 3.1** and **Python 3.8**, and can be installed as following:
+The experimental JAX wheels require **Ubuntu 20.04**, [**Graphcore Poplar SDK 3.1**](https://www.graphcore.ai/) and **Python 3.8**, and can be installed as following:
 ```bash
-pip install TODO: public url jaxlib.whl
-pip install TODO: public url jax.whl
+pip install https://github.com/graphcore-research/jax-experimental/releases/latest/download/jaxlib-0.3.15-cp38-none-manylinux2014_x86_64.whl
+pip install https://github.com/graphcore-research/jax-experimental/releases/latest/download/jax-0.3.16-py3-none-any.whl
 ```
 
 Alternatively, download the `zip` archive of the latest release.
@@ -61,10 +61,18 @@ print(output, output.device())
 * [MNIST classifier training on IPU, with infeeds](ipu/examples/mnist_classifier_with_infeed.py)
 
 
-**Useful environment variables:**
+**Useful JAX backend flags:**
 
-* Use IPU model: `TF_POPLAR_FLAGS='--use_ipu_model --ipu_model_tiles=8'`
-* Configure the default JAX backend: `JAX_PLATFORM_NAME=cpu|gpu|tpu|ipu`
+As standard in JAX, these flags can be set using `from jax.config import config` import.
+
+* Use IPU model emulator in JAX: `config.FLAGS.jax_ipu_use_model = True`
+* Set the number of tiles in the IPU model: `config.FLAGS.jax_ipu_model_num_tiles = 8`
+* Configure the default JAX backend: `config.FLAGS.jax_platform_name = 'ipu'` (or alternatively `config.FLAGS.jax_platforms = "ipu,cpu"`)
+
+Alternatively, like other JAX flags, these can be set using environment variables `JAX_IPU_USE_MODEL` and `JAX_IPU_MODEL_NUM_TILES`.
+
+**Useful [PopVision](https://www.graphcore.ai/developer/popvision-tools) environment variables:**
+
 * Generate PopVision Graph analyser profile: `POPLAR_ENGINE_OPTIONS='{"autoReport.all":"true", "debug.allowOutOfMemory":"true"}'`
 * Generate PopVision system analyser profile: `PVTI_OPTIONS='{"enable":"true", "directory":"./reports"}'`
 

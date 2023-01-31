@@ -23,6 +23,7 @@ XLA. There are also a handful of related casting utilities.
 from functools import partial, lru_cache
 import os
 import platform as py_platform
+import re
 import threading
 from typing import Any, Dict, List, Optional, Union
 import warnings
@@ -87,6 +88,38 @@ flags.DEFINE_string(
     'jax_rocm_visible_devices', 'all',
     'Restricts the set of ROCM devices that JAX will use. Either "all", or a '
     'comma-separate list of integer device IDs.')
+
+
+def ipu_use_model_update_hook(ipu_use_model: bool):
+  """Update env. variable `TF_POPLAR_FLAGS` `use_ipu_model` flag.
+  """
+  tf_poplar_flags = os.getenv('TF_POPLAR_FLAGS', '').lower()
+  # Removing existing flag. And add it back if necessary
+  tf_poplar_flags = tf_poplar_flags.replace("--use_ipu_model", "")
+  if ipu_use_model:
+    tf_poplar_flags += " --use_ipu_model"
+  os.environ['TF_POPLAR_FLAGS'] = tf_poplar_flags
+
+def ipu_model_tiles_update_hook(num_tiles: int):
+  """Update env. variable `TF_POPLAR_FLAGS` `ipu_model_tiles` flag.
+  """
+  tf_poplar_flags = os.getenv('TF_POPLAR_FLAGS', '').lower()
+  # Removing existing flag. And add it back with proper value.
+  tf_poplar_flags = re.sub("--ipu_model_tiles=[0-9]+", "", tf_poplar_flags)
+  tf_poplar_flags += f" --ipu_model_tiles={int(num_tiles)}"
+  os.environ['TF_POPLAR_FLAGS'] = tf_poplar_flags
+
+# Graphcore IPU backend flags.
+flags.DEFINE_bool(
+    'jax_ipu_use_model', 
+    bool_env('JAX_IPU_USE_MODEL', False),
+    'Use Graphcore IPU model emulator.', 
+    update_hook=ipu_use_model_update_hook)
+flags.DEFINE_integer(
+    'jax_ipu_model_num_tiles', 
+    int_env('JAX_IPU_MODEL_NUM_TILES', 4),
+    'Number of tiles to use in Graphcore JAX IPU model.', 
+    update_hook=ipu_model_tiles_update_hook)
 
 def get_compile_options(
     num_replicas: int,
