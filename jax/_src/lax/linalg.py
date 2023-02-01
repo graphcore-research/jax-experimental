@@ -1971,3 +1971,13 @@ def _broadcasting_select_mhlo(which, x, y):
         ir.RankedTensorType.get(out_shape, y_type.element_type), y,
         bcast_dims(y_type.shape))
   return mhlo.SelectOp(which, x, y).result
+
+
+# Lowering of linalg primitives on IPU, when available.
+
+# Using TPU eigh implementation.
+mlir.register_lowering(
+    eigh_p, mlir.lower_fun(_eigh_tpu_impl, multiple_results=True),
+    platform='ipu')
+# Using XLA LU implementation: custom call not yet implemented.
+xla.register_translation(lu_p, _lu_tpu_translation_rule, platform='ipu')

@@ -111,14 +111,14 @@ def ipu_model_tiles_update_hook(num_tiles: int):
 
 # Graphcore IPU backend flags.
 flags.DEFINE_bool(
-    'jax_ipu_use_model', 
+    'jax_ipu_use_model',
     bool_env('JAX_IPU_USE_MODEL', False),
-    'Use Graphcore IPU model emulator.', 
+    'Use Graphcore IPU model emulator.',
     update_hook=ipu_use_model_update_hook)
 flags.DEFINE_integer(
-    'jax_ipu_model_num_tiles', 
+    'jax_ipu_model_num_tiles',
     int_env('JAX_IPU_MODEL_NUM_TILES', 4),
-    'Number of tiles to use in Graphcore JAX IPU model.', 
+    'Number of tiles to use in Graphcore JAX IPU model.',
     update_hook=ipu_model_tiles_update_hook)
 
 def get_compile_options(
