@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from absl.testing import absltest
+from absl.testing import absltest, parameterized
 from jax._src import test_util as jtu
 from unittest import SkipTest
 from functools import partial
@@ -78,6 +78,30 @@ class IpuBasicsTest(jtu.JaxTestCase):
     amin, amax = argminmax(a)
     assert amin == 1
     assert amax == 2
+
+
+  @parameterized.parameters(
+      [
+          (np.uint32, 1),
+          (np.uint32, 32),
+          (np.int32, 32),
+          (np.uint8, 8),
+          # (np.uint16, 8), UINT16 not supported.
+          (np.uint64, 1),
+          (np.uint64, 64),
+      ]
+  )
+  def test_lax_shift_ops(self, dtype, shift):
+    shift = dtype(shift)
+    @partial(jax.jit, backend="ipu")
+    def shift_op(v):
+      return (lax.shift_left(v, shift),
+              lax.shift_right_logical(v, shift))
+
+    a = np.array([0, 1, 3, 5], dtype=dtype)
+    vleft, vright_log = shift_op(a)
+    self.assertAllClose(vleft, np.left_shift(a, shift))
+    self.assertAllClose(vright_log, np.right_shift(a, shift))
 
 
   def test_linear_layer(self):

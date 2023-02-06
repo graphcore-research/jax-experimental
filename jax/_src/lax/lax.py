@@ -4800,3 +4800,29 @@ def _sort_ipu_lower(ctx, *operands, dimension, is_stable, num_keys):
   return sort.results
 
 mlir.register_lowering(sort_p, _sort_ipu_lower, "ipu")
+
+
+# IPU shift lowering: align with CPU/GPU convention when shift >= dtype width.
+def _ipu_shift_lower_mhlo(op, ctx, x, y):
+  """LAX shift lowering on IPU: aligning with CPU/GPU backends convention.
+  """
+  avals_in, (aval_out,) = ctx.avals_in, ctx.avals_out
+  # Compute the "raw" shift, using hardware convention.
+  broadcasted_x, broadcasted_shift = broadcast_mhlo(aval_out, avals_in, (x, y))
+  raw_shift = op(broadcasted_x, broadcasted_shift).results
+
+  outdtype = aval_out.dtype
+  if dtypes.issubdtype(outdtype, np.signedinteger):
+    compare_type = "SIGNED"
+  else:
+    compare_type = "UNSIGNED"
+  # Correct to convention used on other backends: zeroing when larger >= dtype width
+  dtype_width = mlir.ir_constant(np.array(outdtype.itemsize * 8, outdtype))
+  broadcasted_dtype_width, = broadcast_mhlo(aval_out, (ShapedArray((), outdtype),), (dtype_width,))
+  shift_overflow = mlir.compare_mhlo(broadcasted_shift, broadcasted_dtype_width, "GE", compare_type).results
+  broadcasted_zero = mlir.full_like_aval(0, aval_out)
+  return mhlo.SelectOp(shift_overflow, broadcasted_zero, raw_shift).results
+
+mlir.register_lowering(shift_left_p, partial(_ipu_shift_lower_mhlo, mhlo.ShiftLeftOp), "ipu")
+mlir.register_lowering(shift_right_arithmetic_p, partial(_ipu_shift_lower_mhlo, mhlo.ShiftRightArithmeticOp), "ipu")
+mlir.register_lowering(shift_right_logical_p, partial(_ipu_shift_lower_mhlo, mhlo.ShiftRightLogicalOp), "ipu")
