@@ -11,7 +11,7 @@
 
 Experimental JAX on IPUs supports the following **features**:
 
-* Vanilla JAX API: no additional IPU specific API, any code written for IPUs is backward compatible with other backends (CPU/GPU/TPU); 
+* Vanilla JAX API: no additional IPU specific API, any code written for IPUs is backward compatible with other backends (CPU/GPU/TPU);
 * Large coverage of [JAX lax operators](https://jax.readthedocs.io/en/latest/jax.lax.html#operators);
 * Support of JAX [buffer donation](https://jax.readthedocs.io/en/latest/faq.html#buffer-donation) to keep parameters on IPU SRAM;
 * Support of infeeds and outfeeds for high performance on-device training loop;
@@ -21,7 +21,7 @@ Known **limitations** of the project:
 * Single IPU support (hence no `pjit`/`pmap`);
 * No eager mode (every JAX call has to be compiled, loaded, and finally executed on IPU device);
 * IPU code generated can be much larger than official Graphcore [TensorFlow](https://docs.graphcore.ai/projects/tensorflow-user-guide/en/latest/tensorflow/intro.html) or [PopTorch](https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/index.html) (limiting batch size or model size);
-* Missing support of [linear algebra operators](https://jax.readthedocs.io/en/latest/jax.lax.html#module-jax.lax.linalg);
+* Missing [linear algebra operators](https://jax.readthedocs.io/en/latest/jax.lax.html#module-jax.lax.linalg);
 * Incomplete support of JAX random numbers generation on IPU device;
 
 There is no at the moment **no plan** to tackle these issues. Use at your own risk!
@@ -81,3 +81,10 @@ Alternatively, like other JAX flags, these can be set using environment variable
 * [Performance tips for JAX on IPUs;](ipu/docs/performance.md)
 * [How to build experimental JAX Python wheels for IPUs;](ipu/docs/build.md)
 * [Original JAX readme;](README_ORIGINAL.md)
+
+## License
+
+The project remains licensed under the **Apache License 2.0**. No additional Python or C++ dependency has been introduced compared to the original JAX source code (outside Graphcore Poplar and Poplibs licensed under MIT license).
+* JAX license: https://github.com/graphcore-research/jax-experimental/LICENSE
+* JAXLIB license (including compiled dependencies): https://github.com/graphcore-research/jax-experimental/build/LICENSE.txt
+* Graphcore license agreements: https://docs.graphcore.ai/en/latest/licenses.html
