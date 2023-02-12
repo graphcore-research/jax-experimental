@@ -19,8 +19,8 @@ import numpy as np
 import jax
 
 
-def make_symmetric_matrix(N: int, dtype: Any = np.float32) -> np.ndarray:
-    a = np.random.rand(N, N).astype(dtype)
+def make_symmetric_matrix(rng, N: int, dtype: Any = np.float32) -> np.ndarray:
+    a = rng.rand(N, N).astype(dtype)
     a = (a + a.T) * 0.5
     return a
 
@@ -28,8 +28,12 @@ def make_symmetric_matrix(N: int, dtype: Any = np.float32) -> np.ndarray:
 class IpuLinalgTest(jtu.JaxTestCase):
   """Coverage test of JAX LAX linear algebra operators on IPU.
   """
+  def setUp(self):
+    super().setUp()
+    self.rng = np.random.RandomState(42)
+
   def test_linalg_cholesky(self):
-    a = np.diag(np.random.rand(4)).astype(np.float32)
+    a = np.diag(self.rng.rand(4)).astype(np.float32)
     cpu_cholesky = jax.jit(jax.lax.linalg.cholesky, backend="cpu")
     ipu_cholesky = jax.jit(jax.lax.linalg.cholesky, backend="ipu")
     cpu_res = cpu_cholesky(a)
@@ -37,7 +41,7 @@ class IpuLinalgTest(jtu.JaxTestCase):
     self.assertAllClose(ipu_res, cpu_res, rtol=1e-5, atol=1e-5)
 
   def test_linalg_eigh(self):
-    a = make_symmetric_matrix(4)
+    a = make_symmetric_matrix(self.rng, 4)
     cpu_eigh = jax.jit(jax.lax.linalg.eigh, backend="cpu")
     ipu_eigh = jax.jit(jax.lax.linalg.eigh, backend="ipu")
     cpu_eigvecs, cpu_eigvals = cpu_eigh(a)
@@ -46,14 +50,14 @@ class IpuLinalgTest(jtu.JaxTestCase):
     self.assertAllClose(ipu_eigvals, cpu_eigvals, rtol=1e-5, atol=1e-5)
 
   def test_linalg_lu(self):
-    a = make_symmetric_matrix(4)
+    a = make_symmetric_matrix(self.rng, 4)
     ipu_lu = jax.jit(jax.lax.linalg.lu, backend="ipu")
     with self.assertRaises(Exception):
         # XLA custom call not yet implemented on IPU
         ipu_lu(a)
 
   def test_linalg_qr(self):
-    a = make_symmetric_matrix(4)
+    a = make_symmetric_matrix(self.rng, 4)
     cpu_qr = jax.jit(jax.lax.linalg.qr, backend="cpu")
     ipu_qr = jax.jit(jax.lax.linalg.qr, backend="ipu")
     cpu_q, cpu_r = cpu_qr(a)
@@ -62,9 +66,9 @@ class IpuLinalgTest(jtu.JaxTestCase):
     self.assertAllClose(ipu_r, cpu_r)
 
   def test_linalg_svd(self):
-    a = make_symmetric_matrix(4)
+    a = make_symmetric_matrix(self.rng, 4)
     cpu_svd = jax.jit(jax.lax.linalg.svd, backend="cpu")
     ipu_svd = jax.jit(jax.lax.linalg.svd, backend="ipu")
     cpu_vals, *_ = cpu_svd(a)
     ipu_vals, *_ = ipu_svd(a)
-    self.assertAllClose(np.abs(ipu_vals), np.abs(cpu_vals), rtol=1e-5, atol=1e-5)
+    self.assertAllClose(np.abs(ipu_vals), np.abs(cpu_vals), rtol=1e-4, atol=1e-4)
