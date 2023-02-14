@@ -84,7 +84,11 @@ Alternatively, like other JAX flags, these can be set using environment variable
 
 ## License
 
-The project remains licensed under the **Apache License 2.0**. No additional Python or C++ dependency has been introduced compared to the original JAX source code (outside Graphcore Poplar and Poplibs licensed under MIT license).
-* JAX license: https://github.com/graphcore-research/jax-experimental/LICENSE
-* JAXLIB license (including compiled dependencies): https://github.com/graphcore-research/jax-experimental/build/LICENSE.txt
-* Graphcore license agreements: https://docs.graphcore.ai/en/latest/licenses.html
+The project remains licensed under the **Apache License 2.0**, with the following files unchanged:
+* [JAX Apache license 2.0](./LICENSE);
+* [JAXLIB and compiled dependencies licenses;](build/LICENSE.txt)
+
+The additional dependencies introduced for Graphcore IPU support are:
+* [Poplar: licensed under the Graphcore EULA](https://docs.graphcore.ai/projects/eula/en/latest/);
+* [PopLibs: licensed under MIT license](https://docs.graphcore.ai/en/latest/licenses.html);
+* [TensorFlow XLA for IPU: licensed under Apache license 2.0](https://docs.graphcore.ai/en/latest/licenses.html);
