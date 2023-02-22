@@ -5,11 +5,14 @@
 
 # :red_circle: **Non-official experimental** :red_circle: JAX on Graphcore IPU
 
-:red_circle: :warning: **Non-official experimental** :warning: :red_circle: It's a very thin fork of http://github.com/google/jax for Graphcore IPU. This package is provided by Graphcore research team for **experimentation purposes only**, not production (inference or training).
+:red_circle: :warning: **Non-official experimental** :warning: :red_circle: 
+
+This is a very thin fork of http://github.com/google/jax for Graphcore IPU.
+This package is provided by Graphcore Research for **experimentation purposes only**, not production (inference or training).
 
 ## Features and limitations of experimental JAX on IPUs
 
-Experimental JAX on IPUs supports the following **features**:
+The following **features** are supported:
 
 * Vanilla JAX API: no additional IPU specific API, any code written for IPUs is backward compatible with other backends (CPU/GPU/TPU);
 * Large coverage of [JAX lax operators](https://jax.readthedocs.io/en/latest/jax.lax.html#operators);
@@ -22,7 +25,7 @@ Known **limitations** of the project:
 * No eager mode (every JAX call has to be compiled, loaded, and finally executed on IPU device);
 * IPU code generated can be much larger than official Graphcore [TensorFlow](https://docs.graphcore.ai/projects/tensorflow-user-guide/en/latest/tensorflow/intro.html) or [PopTorch](https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/index.html) (limiting batch size or model size);
 * Missing [linear algebra operators](https://jax.readthedocs.io/en/latest/jax.lax.html#module-jax.lax.linalg);
-* Incomplete support of JAX random numbers generation on IPU device;
+* Incomplete support of JAX random number generation on IPU device;  [TODO: fix this line when PRNG PR landed?]
 
 There is no at the moment **no plan** to tackle these issues. Use at your own risk!
 
@@ -38,7 +41,7 @@ Alternatively, download the `zip` archive of the latest release.
 
 ## Minimal example
 
-The following example can be run on [Graphcore IPU Paperspace](https://www.paperspace.com/graphcore) (or locally using the IPU model):
+The following example can be run on [Graphcore IPU Paperspace](https://www.paperspace.com/graphcore) (or on a non-IPU machine using the IPU emulator):
 
 ```python
 from functools import partial
