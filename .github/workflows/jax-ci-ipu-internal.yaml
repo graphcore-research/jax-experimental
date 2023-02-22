@@ -1,4 +1,4 @@
-name: CI_jax_ipu_model
+name: CI_jax_ipu_model_internal
 
 env:
   GIT_MAIN_BRANCH: "jax-v0.3.16-ipu"
@@ -15,6 +15,7 @@ on:
 
 jobs:
   lint_and_typecheck:
+    if: github.repository != 'graphcore-research/jax-experimental'
     runs-on: [self-hosted, Linux, X64, 20.04, Ubuntu]
     timeout-minutes: 10
     steps:
@@ -32,6 +33,7 @@ jobs:
 
   # JAX unit tests using IPU model
   jax_unit_tests_ipu_model:
+    if: github.repository != 'graphcore-research/jax-experimental'
     runs-on: [self-hosted, Linux, X64, 20.04, Ubuntu]
     container: graphcore/pytorch:3.1.0-ubuntu-20.04
     timeout-minutes: 10

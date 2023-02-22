@@ -1,0 +1,80 @@
+name: CI_jax_ipu_model_public
+
+env:
+  GIT_MAIN_BRANCH: "jax-v0.3.16-ipu"
+
+# Controls when the workflow will run.
+on:
+  push:
+    branches: [ "jax-v0.3.16-ipu" ]
+  pull_request:
+    branches: [ "jax-v0.3.16-ipu" ]
+
+  # Allows you to run this workflow manually from the Actions tab.
+  workflow_dispatch:
+
+jobs:
+  lint_and_typecheck:
+    if: github.repository == 'graphcore-research/jax-experimental'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Cancel previous
+        uses: styfle/cancel-workflow-action@0.10.0
+        with:
+          access_token: ${{ github.token }}
+        if: ${{github.ref != 'refs/head/jax-v0.3.16-ipu'}}
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - uses: pre-commit/action@v3.0.0
+
+  # JAX unit tests using IPU model
+  jax_unit_tests_ipu_model:
+    if: github.repository == 'graphcore-research/jax-experimental'
+    runs-on: ubuntu-latest
+    container: graphcore/pytorch:3.1.0-ubuntu-20.04
+    timeout-minutes: 10
+    steps:
+      - name: Cancel previous
+        uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: ${{ github.token }}
+        if: ${{github.ref != 'refs/head/jax-v0.3.16-ipu'}}
+      - uses: actions/checkout@v3
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          python3 -m pip install --upgrade pip wheel setuptools
+          echo "::set-output name=dir::$(pip cache dir)"
+      # Query JAX+JAXLIB IPU wheels from latest release.
+      - name: Fetch pre-compiled JAXLIB IPU release wheels
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          repo: ${{ github.repository }}
+          version: 'latest'
+          regex: true
+          file: "jax.*.whl"
+          target: "wheels/"
+      - name: Pip install pre-compiled JAXLIB & build JAX
+        run: |
+          ls ./wheels/
+          pip3 install -U numpy==1.23.5 scipy etils pytest
+          pip3 install ./wheels/jaxlib-*cp38*.whl
+          python3 setup.py bdist_wheel --universal
+          pip3 install dist/*.whl
+      # Run IPU specific unit tests
+      - name: Run JAX IPU unit tests
+        run: |
+          XLA_IPU_PLATFORM_DEVICE_COUNT=2 JAX_IPU_USE_MODEL=true JAX_IPU_MODEL_NUM_TILES=8 pytest --tb=short -vv --log-cli-level=INFO ./tests/ipu/
+      # Dockerized workflow known to create issues with self-hosted servers.
+      # Solution is to fully cleanup the workspace for the next action.
+      # See: https://stackoverflow.com/questions/70483902/how-to-actually-clean-up-the-repository-on-self-hosted-runner-after-github-actio
+      - name: Cleanup GITHUB_WORKSPACE folder
+        run: |
+          ls -la ./
+          rm -rf ./* || true
+          rm -rf ./.??* || true
+          ls -la ./
