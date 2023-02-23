@@ -54,9 +54,12 @@ output = ipu_function(data)
 print(output, output.device())
 ```
 
-**Additional JAX on IPU examples:**
+**JAX on IPU Paperspace notebooks:**
 
-* [JAX on IPU quickstart notebook](ipu/examples/ipu_quickstart.ipynb);
+* [JAX on IPU quickstart](ipu/examples/jax_ipu_quickstart.ipynb) [![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_quickstart.ipynb)
+
+**Additional JAX on IPU Python examples:**
+
 * [MNIST classifier training on IPU](ipu/examples/mnist_classifier.py)
 * [MNIST classifier training on IPU, with infeeds](ipu/examples/mnist_classifier_with_infeed.py)
 
