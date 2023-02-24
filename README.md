@@ -65,6 +65,8 @@ print(output, output.device())
 
 * [JAX on IPU quickstart](ipu/examples/jax_ipu_quickstart.ipynb) [![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_quickstart.ipynb)
 * [Stateful linear regression on IPU](ipu/examples/jax_ipu_linear_regression.ipynb) [![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_linear_regression.ipynb)
+* [MNIST neural net training on IPU](ipu/examples/jax_ipu_mnist_neural_net_training.ipynb) [![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_mnist_neural_net_training.ipynb)
+
 
 **Additional JAX on IPU Python examples:**
 
