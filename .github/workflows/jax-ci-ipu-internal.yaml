@@ -1,4 +1,4 @@
-name: CI_jax_ipu_model_internal
+name: CI_jax_ipu_internal
 
 env:
   GIT_MAIN_BRANCH: "jax-v0.3.16-ipu"
