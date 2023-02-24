@@ -2,8 +2,15 @@
 <img src="https://raw.githubusercontent.com/google/jax/main/images/jax_logo_250px.png" alt="logo"></img>
 </div>
 
-
 # :red_circle: **Non-official experimental** :red_circle: JAX on Graphcore IPU
+
+[![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_quickstart.ipynb)
+![Continuous integration](https://github.com/graphcore-research/jax-experimental/actions/workflows/jax-ci-ipu-public.yaml/badge.svg)
+
+[**Install guide**](#installation)
+| [**Quickstart**](#minimal-example)
+| [**IPU JAX on Paperspace**](#jax-on-ipu-paperspace-notebooks)
+| [**Documentation**](#documentation)
 
 :red_circle: :warning: **Non-official experimental** :warning: :red_circle: It's a very thin fork of http://github.com/google/jax for Graphcore IPU. This package is provided by Graphcore research team for **experimentation purposes only**, not production (inference or training).
 
@@ -54,9 +61,10 @@ output = ipu_function(data)
 print(output, output.device())
 ```
 
-**JAX on IPU Paperspace notebooks:**
+## JAX on IPU Paperspace notebooks
 
 * [JAX on IPU quickstart](ipu/examples/jax_ipu_quickstart.ipynb) [![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_quickstart.ipynb)
+* [Stateful linear regression on IPU](ipu/examples/jax_ipu_linear_regression.ipynb) [![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_linear_regression.ipynb)
 
 **Additional JAX on IPU Python examples:**
 
