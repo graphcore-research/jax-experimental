@@ -34,7 +34,7 @@ Known **limitations** of the project:
 * No eager mode (every JAX call has to be compiled, loaded, and finally executed on IPU device);
 * IPU code generated can be much larger than official Graphcore [TensorFlow](https://docs.graphcore.ai/projects/tensorflow-user-guide/en/latest/tensorflow/intro.html) or [PopTorch](https://docs.graphcore.ai/projects/poptorch-user-guide/en/latest/index.html) (limiting batch size or model size);
 * Missing [linear algebra operators](https://jax.readthedocs.io/en/latest/jax.lax.html#module-jax.lax.linalg);
-* Incomplete support of JAX random number generation on IPU device;  [TODO: fix this line when PRNG PR landed?]
+* Incomplete support of JAX random number generation on IPU device;
 
 There is no at the moment **no plan** to tackle these issues. Use at your own risk!
 
