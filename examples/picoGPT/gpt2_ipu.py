@@ -9,7 +9,7 @@ from typing import List
 import jax.numpy as np
 from utils import load_encoder_hparams_and_params
 
-config.FLAGS.jax_platform_name = 'ipu'
+config.FLAGS.jax_platform_name = 'cpu'
 
 def gelu(x):
     return 0.5 * x * (1 + np.tanh(np.sqrt(2 / np.pi) * (x + 0.044715 * x**3)))
@@ -54,7 +54,7 @@ def mha(x, c_attn, c_proj, n_head):  # [n_seq, n_embd] -> [n_seq, n_embd]
 
     # split into heads
     # qkv_heads = list(map(lambda x: np.split(x, n_head, axis=-1), qkv))  # [3, n_seq, n_embd] -> [3, n_head, n_seq, n_embd/n_head]
-    qkv_heads = [np.split(x, 12, axis=-1) for x in qkv]
+    qkv_heads = [np.split(x, n_head, axis=-1) for x in qkv]
 
     # causal mask to hide future inputs from being attended to
     causal_mask = (1 - np.tri(x.shape[0], dtype=x.dtype)) * -1e10  # [n_seq, n_seq]
@@ -77,6 +77,10 @@ def transformer_block(x, mlp, attn, ln_1, ln_2, n_head):  # [n_seq, n_embd] -> [
 
     # position-wise feed forward network
     x = x + ffn(layer_norm(x, **ln_2), **mlp)  # [n_seq, n_embd] -> [n_seq, n_embd]
+    # import ipdb; ipdb.set_trace()
+    # print(x)
+    # print(x.shape)
+    # x =  np.add(x, y)
 
     return x
 
@@ -90,30 +94,23 @@ def gpt2(inputs, wte, wpe, blocks, ln_f):  # [n_seq] -> [n_seq, n_vocab]
     x+= wpe[np.arange((len(inputs)))]  # [n_seq] -> [n_seq, n_embd]
     # forward pass through n_layer transformer blocks
     for block in blocks:
-        mlp=block["mlp"]
-        attn=block["attn"]
-        ln_1=block["ln_1"]
-        ln_2=block["ln_2"]
-        x = transformer_block(x, mlp, attn, ln_1, ln_2, n_head=n_head)  # [n_seq, n_embd] -> [n_seq, n_embd]
+        x = transformer_block(x, **block, n_head=n_head)  # [n_seq, n_embd] -> [n_seq, n_embd]
 
     # projection to vocab
     x = layer_norm(x, **ln_f)  # [n_seq, n_embd] -> [n_seq, n_embd]
     out = x @ wte.T  # [n_seq, n_embd] -> [n_seq, n_vocab]
     # import ipdb; ipdb.set_trace()
-    return [out]
+    return out
 
 
-@partial(jax.jit, static_argnums=(4,))
+# @partial(jax.jit, static_argnames=["start", "n_head", "tokens_to_generate"])
 def generate(inputs, start, params, n_head, n_tokens_to_generate):
-    wte=params["wte"]
-    wpe=params["wpe"]
-    blocks=params["blocks"]
-    ln_f=params["ln_f"]
-    for i in tqdm(range(n_tokens_to_generate)):  # auto-regressive decode loop
+    for _ in tqdm(n_tokens_to_generate):  # auto-regressive decode loop
         # import ipdb; ipdb.set_trace()
 
         # import ipdb; ipdb.set_trace()
-        logits = gpt2(inputs, wte, wpe, blocks, ln_f)  # model forward pass
+        logits = gpt2(inputs, **params)  # model forward pass
+        print(logits[-1], logits[-1].shape, np.argmax(logits[-1]))
         next_id = np.argmax(logits[-1])  # greedy sampling
         # mask = mask.at[start + i].set(1)
         # import ipdb; ipdb.set_trace()
@@ -122,11 +119,10 @@ def generate(inputs, start, params, n_head, n_tokens_to_generate):
         print(inputs)
         # inputs.append(next_id)
     # return 1
-    # return inputs[len(inputs) - n_tokens_to_generate :]  # only return generated ids
-    return inputs  # only return generated ids
+    return inputs  
 
 
-def main(prompt: str, n_tokens_to_generate: int = 25, model_size: str = "124M", models_dir: str = "models"):
+def main(prompt: str, n_tokens_to_generate: int = 40, model_size: str = "124M", models_dir: str = "models"):
     print("IPU devices:", jax.devices("ipu"))
 
     # load encoder, hparams, and params from the released open-ai gpt-2 files
@@ -153,6 +149,7 @@ def main(prompt: str, n_tokens_to_generate: int = 25, model_size: str = "124M", 
     print(input_ids)
     start = mask.index(0)
     mask = np.array(mask)
+    n_tokens_to_generate = np.arange(n_tokens_to_generate)
     output_ids = generate(input_ids, start, params, hparams["n_head"], n_tokens_to_generate)
     # generate(input_ids, params, hparams["n_head"], n_tokens_to_generate)
 
@@ -160,6 +157,7 @@ def main(prompt: str, n_tokens_to_generate: int = 25, model_size: str = "124M", 
     print(output_ids)
     print(output_ids.device())
     output_ids = onp.array(output_ids)
+    # TODO: This needs checking for dimmensions.
     output_text = encoder.decode(output_ids)
     print(f"how many generated: {len(output_ids)}")
     print(f"The generated_output is {output_text}")
