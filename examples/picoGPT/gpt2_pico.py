@@ -48,7 +48,7 @@ def generate(inputs, params, n_head, n_tokens_to_generate):
         inputs.append(int(next_id))
     return inputs[len(inputs) - n_tokens_to_generate :]
 
-def main(prompt: str, n_tokens_to_generate: int = 40, model_size: str = "124M", models_dir: str = "models"):
+def main(prompt: str, n_tokens_to_generate: int = 15, model_size: str = "124M", models_dir: str = "models"):
     from utils import load_encoder_hparams_and_params
     encoder, hparams, params = load_encoder_hparams_and_params(model_size, models_dir)
     input_ids = encoder.encode(prompt)
