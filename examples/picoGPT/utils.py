@@ -48,7 +48,7 @@ def load_gpt2_params_from_tf_ckpt(tf_ckpt_path, hparams):
             return val
         if keys[0] not in d:
             d[keys[0]] = {}
-        d[keys[0]] = set_in_nested_dict(d[keys[0]], keys[1:], val.astype(np.float32))
+        d[keys[0]] = set_in_nested_dict(d[keys[0]], keys[1:], val.astype(np.float16))
         return d
 
     params = {"blocks": [{} for _ in range(hparams["n_layer"])]}
