@@ -5,18 +5,24 @@ import numpy as onp
 from jax.config import config
 from tqdm import tqdm
 from typing import List
-# from utils import load_encoder_hparams_and_params
-from gpt2_ipu import transformer_block
+
 
 import jax.numpy as np
 
 config.FLAGS.jax_platform_name = "ipu"
 
-print("WARNING: Converted all variables loaded into fp16!")
-
 
 def linear(x, w, b):  # [m, in], [in, out], [out] -> [m, out]
     return x @ w + b
+
+def ffn(x, c_fc, c_proj):  # [n_seq, n_embd] -> [n_seq, n_embd]
+    # project up
+    a = linear(x, **c_fc)  # [n_seq, n_embd] -> [n_seq, 4*n_embd]
+
+    # project back down
+    x = linear(a, **c_proj)  # [n_seq, 4*n_embd] -> [n_seq, n_embd]
+
+    return x
 
 
 def softmax(x):
@@ -55,9 +61,8 @@ def model(x, wte, blocks, l1, l3):
     x = wte[x, :]
     x = linear(x, **l1)
     for block in blocks:
-        x = transformer_block(
-            x, **block, n_head=12
-        )  # [n_seq, n_embd] -> [n_seq, n_embd]
+        x = ffn(x, **block) # [n_seq, n_embd] -> [n_seq, n_embd]
+    
     out = linear(x, **l3)
     out /= np.sum(out)
     return out
@@ -80,77 +85,29 @@ def generate(x, wte, blocks, model_params, num_to_generate):
 
     return x
 
-
-# wte = params["wte"]  # [50257, 768]
-# import ipdb; ipdb.set_trace()
+# word token embeddings
 wte = onp.random.random((hparams["n_vocab"], n_hid)).astype(
     np.float16
 )  # [768, 50257] = 38,000,000  --- 72 Mb in fp16
 
+
 """
-'attn' :
-    'c_attn':
-        'w': [768, 2304] = 1,790,000
-        'b': [2304]
-    'c_proj':
-        'w': [768, 768] = 589,000
-        'b': [768]
-'ln_1':
-    'b': [768]
-    'g': [768]
-'ln_2':
-    'b': [768]
-    'g': [768]
-'mlp':
-    'c_fc':
-        'w': [768, 3072] = 2,359,000
-        'b': [3072, ]
-    'c_proj':
-        'w': [3072, 768] = 2,359,000
-        'b': [768]
-Approximate: ~7,100,000 parameters. * 2 bytes for fp16 = 14,200,000 bytes / 1,048,576 = 13 Mb
+Keeping the shapes and sizes 
 """
-num_blocks = 2
-blocks = [
-    {
-        "attn": {
-            "c_attn": {
-                "w": onp.random.random([768, 2304]).astype(onp.float16),
-                "b": onp.random.random([2304]).astype(onp.float16),
-            },
-            "c_proj": {
-                "w": onp.random.random([768, 768]).astype(onp.float16),
-                "b": onp.random.random([768]).astype(onp.float16),
-            },
-        },
-        "ln_1": {
-            "b": onp.random.random([768]).astype(onp.float16),
-            "g": onp.random.random([768]).astype(onp.float16),
-        },
-        "ln_2": {
-            "b": onp.random.random([768]).astype(onp.float16),
-            "g": onp.random.random([768]).astype(onp.float16),
-        },
-        "mlp": {
+num_blocks = 5
+
+# ~ 5,000,000 parameters / block --> ~ 10 Mb each 
+fnn_blocks = [{
             "c_fc": {
                 "w": onp.random.random([768, 3072]).astype(onp.float16),
-                "b": onp.random.random(
-                    [
-                        3072,
-                    ]
-                ).astype(onp.float16),
+                "b": onp.random.random([3072]).astype(onp.float16),
             },
             "c_proj": {
                 "w": onp.random.random([3072, 768]).astype(onp.float16),
                 "b": onp.random.random([768]).astype(onp.float16),
-            },
-        },
-    }
-    for _ in range(num_blocks)
-]
+            },} for _ in range(num_blocks)]
 
-
-out = generate(x, wte, blocks, model_params, num_to_generate)
+out = generate(x, wte, fnn_blocks, model_params, num_to_generate)
 print(out, out.shape)
 
 output_ids = onp.array(out)
