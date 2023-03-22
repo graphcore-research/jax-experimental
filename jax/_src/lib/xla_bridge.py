@@ -99,6 +99,7 @@ def ipu_use_model_update_hook(ipu_use_model: bool):
   if ipu_use_model:
     tf_poplar_flags += " --use_ipu_model"
   os.environ['TF_POPLAR_FLAGS'] = tf_poplar_flags
+  os.environ['JAX_IPU_USE_MODEL'] = str(ipu_use_model)
 
 def ipu_model_tiles_update_hook(num_tiles: int):
   """Update env. variable `TF_POPLAR_FLAGS` `ipu_model_tiles` flag.
@@ -108,6 +109,12 @@ def ipu_model_tiles_update_hook(num_tiles: int):
   tf_poplar_flags = re.sub("--ipu_model_tiles=[0-9]+", "", tf_poplar_flags)
   tf_poplar_flags += f" --ipu_model_tiles={int(num_tiles)}"
   os.environ['TF_POPLAR_FLAGS'] = tf_poplar_flags
+  os.environ['JAX_IPU_MODEL_NUM_TILES'] = str(num_tiles)
+
+def ipu_flag_update_hook(name: str, value: Any):
+  """Update env. variable for a JAX IPU flag.
+  """
+  os.environ[name.upper()] = str(value)
 
 # Graphcore IPU backend flags.
 flags.DEFINE_bool(
@@ -120,6 +127,11 @@ flags.DEFINE_integer(
     int_env('JAX_IPU_MODEL_NUM_TILES', 4),
     'Number of tiles to use in Graphcore JAX IPU model.',
     update_hook=ipu_model_tiles_update_hook)
+flags.DEFINE_bool(
+    'jax_ipu_use_legacy_client',
+    bool_env('JAX_IPU_LEGACY_CLIENT', True),
+    'Use legacy IPU PjRt client, not supporting multiple IPUs.',
+    update_hook=partial(ipu_flag_update_hook, 'jax_ipu_use_legacy_client'))
 
 def get_compile_options(
     num_replicas: int,

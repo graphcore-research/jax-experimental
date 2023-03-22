@@ -1212,7 +1212,8 @@ class PmapComputation(stages.XlaLowering):
   @profiler.annotate_function
   def compile(self) -> PmapExecutable:
     if self._executable is None:
-      self._executable = PmapExecutable.from_hlo(self._hlo, **self.compile_args)
+      # IPU JAX backend not supporting MLIR yet.
+      self._executable = PmapExecutable.from_hlo(self.hlo(), **self.compile_args)
     return self._executable
 
 
