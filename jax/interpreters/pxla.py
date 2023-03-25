@@ -2613,7 +2613,7 @@ class MeshComputation(stages.XlaLowering):
               _allow_compile_replicated : bool = True) -> MeshExecutable:
     if self._executable is None:
       self._executable = MeshExecutable.from_hlo(
-          self._name, self._hlo, **self.compile_args,
+          self._name, self.hlo(), **self.compile_args,
           _allow_propagation_to_outputs=_allow_propagation_to_outputs,
           _allow_compile_replicated=_allow_compile_replicated)  # type: ignore
     return self._executable
