@@ -88,6 +88,16 @@ def check_numpy_version(python_bin_path):
     sys.exit(-1)
   return version
 
+# IPU utils.
+def ipu_get_sdk_version() -> str:
+  try:
+    result = subprocess.run(['popc', '--version'], stdout=subprocess.PIPE)
+    popc_output = result.stdout.decode("utf-8")
+    sdk_version = re.search(r'POPLAR version\s*([\d.]+)', popc_output).group(1).strip()
+  except:
+    sdk_version = None
+  return sdk_version
+
 # Bazel
 
 BAZEL_BASE_URI = "https://github.com/bazelbuild/bazel/releases/download/5.1.1/"
@@ -374,6 +384,10 @@ def main():
       help_str="Should we build with Cloud TPU VM support enabled?")
   add_boolean_argument(
       parser,
+      "enable_ipu",
+      help_str="Should we build with Graphcore IPU support?")
+  add_boolean_argument(
+      parser,
       "enable_remote_tpu",
       help_str="Should we build with remote Cloud TPU support enabled?")
   add_boolean_argument(
@@ -503,6 +517,19 @@ def main():
     if args.cudnn_version:
       print(f"CUDNN version: {args.cudnn_version}")
     print("NCCL enabled: {}".format("yes" if args.enable_nccl else "no"))
+
+  print("IPU Graphcore enabled: {}".format("yes" if args.enable_ipu else "no"))
+  if args.enable_ipu:
+    ipu_poplar_path = os.environ.get("TF_POPLAR_BASE", None)
+    if ipu_poplar_path is None:
+      raise ValueError("Please set 'TF_POPLAR_BASE' env. variable for IPU support.")
+    print(f"IPU Poplar path: {ipu_poplar_path}")
+    # Set the Poplar SDK version in env. variable.
+    ipu_sdk_version = ipu_get_sdk_version()
+    if ipu_sdk_version is None:
+      raise ValueError("Could not properly query IPU Poplar SDK version.")
+    print(f"IPU Poplar SDK version: {ipu_sdk_version}")
+    os.environ["JAX_IPU_SDK_VERSION"] = ipu_sdk_version
 
   print("TPU enabled: {}".format("yes" if args.enable_tpu else "no"))
   print("Remote TPU enabled: {}".format("yes" if args.enable_remote_tpu else "no"))

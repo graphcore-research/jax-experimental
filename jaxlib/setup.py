@@ -29,6 +29,9 @@ cudnn_version = os.environ.get("JAX_CUDNN_VERSION")
 if cuda_version and cudnn_version:
   __version__ += f"+cuda{cuda_version.replace('.', '')}-cudnn{cudnn_version.replace('.', '')}"
 
+ipu_sdk_version = os.environ.get("JAX_IPU_SDK_VERSION").replace('.', '')
+__version__ += f"+ipu-sdk{ipu_sdk_version}"
+
 nightly = os.environ.get('JAXLIB_NIGHTLY')
 if nightly:
   project_name = 'jaxlib-nightly'
