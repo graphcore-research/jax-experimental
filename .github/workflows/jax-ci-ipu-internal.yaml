@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Cancel previous
-        uses: styfle/cancel-workflow-action@0.10.0
+        uses: styfle/cancel-workflow-action@0.11.0
         with:
           access_token: ${{ github.token }}
         if: ${{github.ref != 'refs/head/jax-v0.3.16-ipu'}}
@@ -67,9 +67,9 @@ jobs:
           python3 setup.py bdist_wheel --universal
           pip3 install dist/*.whl
       # Run IPU specific unit tests
-      - name: Run JAX IPU unit tests
+      - name: Run JAX IPU model unit tests
         run: |
-          XLA_IPU_PLATFORM_DEVICE_COUNT=2 JAX_IPU_USE_MODEL=true JAX_IPU_MODEL_NUM_TILES=8 pytest --tb=short -vv --log-cli-level=INFO ./tests/ipu/
+          JAX_IPU_DEVICE_COUNT=2 JAX_IPU_USE_MODEL=true JAX_IPU_MODEL_NUM_TILES=8 pytest --tb=short -vv --log-cli-level=INFO ./tests/ipu/
       # Dockerized workflow known to create issues with self-hosted servers.
       # Solution is to fully cleanup the workspace for the next action.
       # See: https://stackoverflow.com/questions/70483902/how-to-actually-clean-up-the-repository-on-self-hosted-runner-after-github-actio

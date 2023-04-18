@@ -129,9 +129,19 @@ flags.DEFINE_integer(
     update_hook=ipu_model_tiles_update_hook)
 flags.DEFINE_bool(
     'jax_ipu_use_legacy_client',
-    bool_env('JAX_IPU_LEGACY_CLIENT', True),
+    bool_env('JAX_IPU_USE_LEGACY_CLIENT', False),
     'Use legacy IPU PjRt client, not supporting multiple IPUs.',
     update_hook=partial(ipu_flag_update_hook, 'jax_ipu_use_legacy_client'))
+flags.DEFINE_integer(
+    'jax_ipu_device_count',
+    int_env('JAX_IPU_DEVICE_COUNT', -1),
+    'Number of IPUs attached to JAX.',
+    update_hook=partial(ipu_flag_update_hook, 'jax_ipu_device_count'))
+flags.DEFINE_string(
+    'jax_ipu_visible_devices',
+    os.getenv('JAX_IPU_VISIBLE_DEVICES', '').lower(),
+    'Specific IPUs visible and attached to JAX.',
+    update_hook=partial(ipu_flag_update_hook, 'jax_ipu_visible_devices'))
 
 def get_compile_options(
     num_replicas: int,

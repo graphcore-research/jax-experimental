@@ -16,6 +16,7 @@ from absl.testing import absltest, parameterized
 from jax._src import test_util as jtu
 from unittest import SkipTest
 from functools import partial
+import time
 
 import os
 import numpy as np
@@ -24,16 +25,24 @@ import jax.numpy as jnp
 
 from jax import lax
 from jax.config import config
+from jaxlib.ipu_xla_client import IpuPjRtDevice
+
+# Skipping tests on legacy IPU backend.
+is_ipu_legacy_backend = not isinstance(jax.devices("ipu")[0], IpuPjRtDevice)
 
 
 class IpuBasicsTest(jtu.JaxTestCase):
+  def setUp(self):
+    super().setUp()
+    self.is_ipu_model = config.FLAGS.jax_ipu_use_model
 
   def test_device_count(self):
-    expected = os.getenv('XLA_IPU_PLATFORM_DEVICE_COUNT')
+    expected = os.getenv('JAX_IPU_DEVICE_COUNT')
     expected = int(expected) if expected else 1
-
-    assert jax.device_count(backend='ipu') == expected
-    assert len(jax.devices("ipu")) == expected
+    # Only testing on IPU model for device count.
+    if self.is_ipu_model:
+      assert jax.device_count(backend='ipu') == expected
+      assert len(jax.devices("ipu")) == expected
 
   def test_default_backend(self):
     config.FLAGS.jax_platform_name = 'ipu'
@@ -67,6 +76,31 @@ class IpuBasicsTest(jtu.JaxTestCase):
     c = jit_add(a, b)
     self.assertAllClose(c, a + b)
 
+  def test_asynchronous_backend(self):
+    @partial(jax.jit, backend="ipu")
+    def fn(x):
+        y = x * x
+        return y * (y - x)
+
+    N = 1000000
+    x = np.arange(N).astype(np.float32)
+    # First dummy call to compile.
+    fn(x)
+
+    num_iters = 10
+    start = time.perf_counter()
+    for _ in range(num_iters):
+        x = fn(x)
+    async_timing = time.perf_counter() - start
+    x.block_until_ready()
+
+    start = time.perf_counter()
+    for _ in range(num_iters):
+        x = fn(x).block_until_ready()
+    block_timing = time.perf_counter() - start
+
+    # At least 10x faster without blocking.
+    self.assertLessEqual(async_timing * 10, block_timing)
 
   def test_lax_argmin_argmax(self):
     @partial(jax.jit, backend="ipu")

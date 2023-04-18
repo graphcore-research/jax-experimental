@@ -21,7 +21,7 @@ from jax._src import test_util as jtu
 import jax
 import numpy as np
 
-class DonateArgnumsTest(jtu.JaxTestCase):
+class IpuDonateArgnumsTest(jtu.JaxTestCase):
 
   def testSingleDonateBufferFirstArgument(self):
 

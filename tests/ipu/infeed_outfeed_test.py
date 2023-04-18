@@ -14,6 +14,7 @@
 
 
 import threading
+import unittest
 
 from absl.testing import absltest
 from jax._src import test_util as jtu
@@ -25,11 +26,19 @@ from jax.experimental import host_callback as hcb
 from jax.lib import xla_client
 import numpy as np
 
+from jaxlib.ipu_xla_client import IpuPjRtDevice
+
 config.parse_flags_with_absl()
 FLAGS = config.FLAGS
 
-class InfeedTest(jtu.JaxTestCase):
 
+# Skipping tests on new IPU backend.
+is_ipu_legacy_backend = not isinstance(jax.devices("ipu")[0], IpuPjRtDevice)
+
+
+class IpuInfeedTest(jtu.JaxTestCase):
+
+  @unittest.skipUnless(is_ipu_legacy_backend, "Infeed/outfeed not yet supported on IPU.")
   def testInfeed(self):
 
     @jax.jit
@@ -45,6 +54,7 @@ class InfeedTest(jtu.JaxTestCase):
     device.transfer_to_infeed((y,))
     self.assertAllClose(f(x), x + y)
 
+  @unittest.skipUnless(is_ipu_legacy_backend, "Infeed/outfeed not yet supported on IPU.")
   def testInfeedPytree(self):
 
     x = np.float32(1.5)
@@ -64,6 +74,7 @@ class InfeedTest(jtu.JaxTestCase):
     device.transfer_to_infeed(tuple(flat_to_infeed))
     self.assertAllClose(f(x), to_infeed)
 
+  @unittest.skipUnless(is_ipu_legacy_backend, "Infeed/outfeed not yet supported on IPU.")
   def testOutfeed(self):
     hcb.stop_outfeed_receiver()
 
@@ -86,6 +97,7 @@ class InfeedTest(jtu.JaxTestCase):
     device.transfer_from_outfeed(
       xla_client.shape_from_pyval((x,)).with_major_to_minor_layout_if_absent())
 
+  @unittest.skipUnless(is_ipu_legacy_backend, "Infeed/outfeed not yet supported on IPU.")
   def testOutfeedPytree(self):
     hcb.stop_outfeed_receiver()
 
@@ -109,6 +121,7 @@ class InfeedTest(jtu.JaxTestCase):
     device.transfer_from_outfeed(
       xla_client.shape_from_pyval((x, y)).with_major_to_minor_layout_if_absent())
 
+  @unittest.skipUnless(is_ipu_legacy_backend, "Infeed/outfeed not yet supported on IPU.")
   def testInfeedThenOutfeed(self):
     hcb.stop_outfeed_receiver()
 
@@ -131,6 +144,7 @@ class InfeedTest(jtu.JaxTestCase):
     execution.join()
     self.assertAllClose(out, y + np.float32(1))
 
+  @unittest.skipUnless(is_ipu_legacy_backend, "Infeed/outfeed not yet supported on IPU.")
   def testInfeedThenOutfeedInALoop(self):
     hcb.stop_outfeed_receiver()
 

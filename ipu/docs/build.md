@@ -13,7 +13,7 @@ Note: the build process will work with more recent versions of NumPy, but that w
 Building `jaxlib` currently requires the branch `jax-v0.3.15-ipu`. Once the branch checked out, the build process is similar to other backends:
 ```bash
 export TF_POPLAR_BASE=#...poplar install directory
-python build/build.py --bazel_options=--override_repository=org_tensorflow=PATH/tensorflow-jax-experimental
+python build/build.py --enable_ipu --bazel_options=--override_repository=org_tensorflow=PATH/tensorflow-jax-experimental
 ```
 The `override_repository` config is optional. By default, the build process will pull the experimental IPU TensorFlow XLA code from the repository https://github.com/graphcore-research/tensorflow-jax-experimental.
 
