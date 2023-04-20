@@ -17,8 +17,8 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
     name = "org_tensorflow",
-    branch = "jaxlibv0.3.15/sdk-release-3.0-lean-jax",
-    remote = "git@github.com:graphcore/tensorflow-jax-poc.git"
+    branch = "jaxlibv0.3.15/sdk-release-3.1-lean-jax",
+    remote = "git@github.com:graphcore-research/tensorflow-jax-experimental.git"
 )
 
 # For development, one often wants to make changes to the TF repository as well
