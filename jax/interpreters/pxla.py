@@ -990,7 +990,9 @@ def find_replicas(jaxpr, axis_size, global_axis_size):
 
 def should_tuple_args(shards: ShardInfo):
   # tuplify long arg lists for TPU
-  return len(shards.global_sharded_avals) > 100
+  # return len(shards.global_sharded_avals) > 100
+  # tuple args not yet supported on IPU
+  return False
 
 
 def stage_parallel_callable(
@@ -2396,6 +2398,8 @@ def lower_sharding_computation(
 
   # 2. Build up the HLO
   tuple_args = len(in_jaxpr_avals) > 100  # pass long arg lists as tuple for TPU
+  # tuple args not yet supported on IPU
+  tuple_args = False
   in_op_shardings: Optional[List[Optional[xc.OpSharding]]]
   out_op_shardings: Optional[List[Optional[xc.OpSharding]]]
   axis_ctx: mlir.ShardingContext
@@ -2521,6 +2525,8 @@ def lower_mesh_computation(
 
   # 2. Build up the HLO
   tuple_args = len(in_jaxpr_avals) > 100  # pass long arg lists as tuple for TPU
+  # tuple args not yet supported on IPU
+  tuple_args = False
   in_partitions: Optional[List[Optional[xc.OpSharding]]]
   out_partitions: Optional[List[Optional[xc.OpSharding]]]
   axis_ctx: mlir.AxisContext
