@@ -63,7 +63,7 @@ jobs:
         run: |
           ls ./wheels/
           pip3 install -U numpy==1.23.5 scipy etils pytest
-          pip3 install ./wheels/jaxlib-*cp38*.whl
+          pip3 install ./wheels/jaxlib-0.3.15+ipu.sdk310-cp38*.whl
           python3 setup.py bdist_wheel --universal
           pip3 install dist/*.whl
       # Run IPU specific unit tests

@@ -27,8 +27,10 @@ from functools import partial
 
 import numpy.random as npr
 
+import jax
 import jax.numpy as jnp
 from jax import jit, grad, random
+from jax.tree_util import tree_map
 from jax.example_libraries import optimizers
 from jax.example_libraries import stax
 from jax.example_libraries.stax import Dense, Relu, LogSoftmax
@@ -94,13 +96,19 @@ if __name__ == "__main__":
   opt_state = opt_init(init_params)
   itercount = itertools.count()
 
-  print("\nStarting training...")
+  print("Number of IPU visible devices:", len(jax.devices("ipu")))
+  print("Starting training...")
   for epoch in range(num_epochs):
     start_time = time.time()
     for _ in range(num_batches):
+      # State is kept on SRAM. Only transferred once.
       opt_state = update(next(itercount), opt_state, next(batches))
+
+    # Block to get accurate timing of the epoch!
+    tree_map(lambda x: x.block_until_ready(), opt_state)
     epoch_time = time.time() - start_time
 
+    # Getting back the state on HOST for accuracy.
     params = get_params(opt_state)
     train_acc = accuracy(params, (train_images, train_labels))
     test_acc = accuracy(params, (test_images, test_labels))
