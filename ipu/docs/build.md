@@ -4,7 +4,7 @@ Building and testing JAX on IPU requires the following base configuration: Ubunt
 
 Additionally, you need to install to the following packages in your Python environment:
 ```bash
-pip install numpy==1.21.6 scipy cython pytest
+pip install numpy==1.22.4 scipy cython pytest
 ```
 Note: the build process will work with more recent versions of NumPy, but that will then limit NumPy backward compatibility.
 
@@ -37,5 +37,5 @@ Similarly to the previous section, the `jax` Python wheel will be produced in `d
 
 The branch `jax-v0.3.16-ipu` contains a collection of IPU specific unit tests in `tests/ipu`, mostly covering bug fixes improving feature coverage. The later can be run as following using the IPU model:
 ```bash
-XLA_IPU_PLATFORM_DEVICE_COUNT=2 TF_POPLAR_FLAGS='--use_ipu_model' pytest -vvv ./tests/ipu/
+JAX_IPU_DEVICE_COUNT=2 JAX_IPU_USE_MODEL=true pytest -vvv ./tests/ipu/
 ```
