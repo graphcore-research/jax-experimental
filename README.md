@@ -44,10 +44,9 @@ This is a **research project**, not an official Graphcore product. Expect bugs a
 
 The experimental JAX wheels require **Ubuntu 20.04**, [**Graphcore Poplar SDK 3.1 or 3.2**](https://www.graphcore.ai/) and **Python 3.8**, and can be installed as following:
 ```bash
-pip install https://github.com/graphcore-research/jax-experimental/releases/latest/download/jaxlib-0.3.15+ipu.sdk310-cp38-none-manylinux2014_x86_64.whl
-pip install https://github.com/graphcore-research/jax-experimental/releases/latest/download/jax-0.3.16+ipu-py3-none-any.whl
+pip install jax==0.3.16+ipu jaxlib==0.3.15+ipu.sdk310 -f https://graphcore-research.github.io/jax-experimental/wheels.html
 ```
-For SDK 3.2, please update the `jaxlib` install URL using `jaxlib-0.3.15+ipu.sdk320`.
+For SDK 3.2, please change `jaxlib` version to `jaxlib==0.3.15+ipu.sdk320`.
 
 ## Minimal example
 

@@ -1,0 +1,41 @@
+name: CI_jax_ipu_release_public
+
+env:
+  GIT_MAIN_BRANCH: "jax-v0.3.16-ipu"
+
+# Controls when the workflow will run.
+on:
+  # Only main IPU branch
+  push:
+    branches: [ "jax-v0.3.16-ipu" ]
+  pull_request:
+    branches: [ "jax-v0.3.16-ipu" ]
+    types:
+    - closed
+
+  # Allows you to run this workflow manually from the Actions tab.
+  workflow_dispatch:
+
+jobs:
+  public_pages:
+    if: github.repository == 'graphcore-research/jax-experimental'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          pip install github3.py
+      - name: Build HTML wheels page
+        run: |
+          python ./build/ipu/generate_wheels_html.py
+          ls _site/
+      - name: Publish pages
+        uses: Cecilapp/GitHub-Pages-deploy@v3
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
+        with:
+          build_dir: _site
