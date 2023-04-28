@@ -12,6 +12,8 @@ on:
     branches: [ "jax-v0.3.16-ipu" ]
     types:
     - closed
+  release:
+    types: [edited, deleted, published]
 
   # Allows you to run this workflow manually from the Actions tab.
   workflow_dispatch:

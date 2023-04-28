@@ -6,7 +6,7 @@
 # :red_circle: **Non-official experimental** :red_circle: JAX on Graphcore IPU
 
 [![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_quickstart.ipynb)
-![Continuous integration](https://github.com/graphcore-research/jax-experimental/actions/workflows/jax-ci-ipu-public.yaml/badge.svg)
+![Continuous integration](https://github.com/graphcore-research/jax-experimental/actions/workflows/jax-ipu-tests-public.yaml/badge.svg)
 
 [**Install guide**](#installation)
 | [**Quickstart**](#minimal-example)
