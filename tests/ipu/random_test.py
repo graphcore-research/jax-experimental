@@ -44,8 +44,8 @@ class IpuRandomTest(jtu.JaxTestCase):
 
     expected = ("0xc4923a9c", "0x483df7a0")
     result = prng.threefry_2x32(
-        np.uint32([0x13198a2e, 0x03707344]),
-        np.uint32([0x243f6a88, 0x85a308d3]))
+        np.uint32([0x13198a2e, 0x03707344]), np.uint32([0x243f6a88, 0x85a308d3])
+    )
     self.assertEqual(expected, result_to_hex(result))
 
   def testRngRandomBits(self):
@@ -53,7 +53,7 @@ class IpuRandomTest(jtu.JaxTestCase):
     key = random.PRNGKey(1701)
 
     bits8 = jax._src.random._random_bits(key, 8, (3,))
-    expected8 = np.array([216, 115,  43], dtype=np.uint8)
+    expected8 = np.array([216, 115, 43], dtype=np.uint8)
     self.assertArraysEqual(bits8, expected8)
 
     # U16 not supported at the moment on IPU XLA backend.
@@ -65,11 +65,15 @@ class IpuRandomTest(jtu.JaxTestCase):
     expected32 = np.array([56197195, 4200222568, 961309823], dtype=np.uint32)
     self.assertArraysEqual(bits32, expected32)
 
-    with jtu.ignore_warning(category=UserWarning, message="Explicitly requested dtype.*"):
+    with jtu.ignore_warning(
+        category=UserWarning, message="Explicitly requested dtype.*"
+    ):
       bits64 = jax._src.random._random_bits(key, 64, (3,))
     if config.x64_enabled:
-      expected64 = np.array([3982329540505020460, 16822122385914693683,
-                             7882654074788531506], dtype=np.uint64)
+      expected64 = np.array([
+          3982329540505020460, 16822122385914693683, 7882654074788531506
+      ],
+                            dtype=np.uint64)
     else:
       expected64 = np.array([676898860, 3164047411, 4010691890], dtype=np.uint32)
     self.assertArraysEqual(bits64, expected64)

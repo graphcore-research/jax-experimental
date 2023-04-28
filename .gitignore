@@ -26,3 +26,6 @@ bin/
 include/
 lib/
 share/
+
+# IPU specific.
+*.rendered.*.cpp

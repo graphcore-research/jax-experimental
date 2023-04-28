@@ -21,6 +21,7 @@ from jax._src import test_util as jtu
 import jax
 import numpy as np
 
+
 class IpuDonateArgnumsTest(jtu.JaxTestCase):
 
   def testSingleDonateBufferFirstArgument(self):
@@ -94,6 +95,7 @@ class IpuDonateArgnumsTest(jtu.JaxTestCase):
     z = np.float32(5)
     raise SkipTest("IPU XLA not supporting interleaved donate argnums.")
     self.assertAllClose(f(x, y, z), (z + 3, y + 2, x + 1))
+
 
 if __name__ == '__main__':
   absltest.main(testLoader=jtu.JaxTestLoader())

@@ -25,11 +25,13 @@ from jaxlib.ipu_xla_client import IpuTargetType
 import numpy as np
 
 ipu_num_devices = len(jax.devices("ipu"))
-is_ipu_model = len(jax.devices("ipu")) > 0 and jax.devices("ipu")[0].target_type == IpuTargetType.IPU_MODEL
+is_ipu_model = len(jax.devices("ipu")
+                  ) > 0 and jax.devices("ipu")[0].target_type == IpuTargetType.IPU_MODEL
 
 
 # Set JAX_IPU_DEVICE_COUNT=N os env to attach multiple IPUs
 class IpuMultiDeviceTest(jtu.JaxTestCase):
+
   @unittest.skipIf(ipu_num_devices < 2, "Requires multiple IPU devices")
   def test_jit_on_multi_devices(self):
     self.assertEqual(jax.default_backend(), 'ipu')
@@ -49,18 +51,20 @@ class IpuMultiDeviceTest(jtu.JaxTestCase):
       r = jit_func(x, w, b)
       self.assertAllClose(r, w @ x + b)
 
-  @unittest.skipIf(ipu_num_devices < 2 or is_ipu_model, "Requires multiple IPU hardware devices")
+  @unittest.skipIf(
+      ipu_num_devices < 2 or is_ipu_model, "Requires multiple IPU hardware devices"
+  )
   def test_pmap_simple_reduce(self):
     N = 3
     data = np.arange(2 * N, dtype=np.float32).reshape((-1, N))
 
     @partial(jax.pmap, axis_name='i', donate_argnums=(1,), backend="ipu")
     def parallel_fn(x, y):
-        z = x + jax.lax.psum(y, 'i')
-        return z
+      z = x + jax.lax.psum(y, 'i')
+      return z
 
-    output = parallel_fn(data**2, data)
-    self.assertAllClose(output, data**2 + np.sum(data, axis=0))
+    output = parallel_fn(data ** 2, data)
+    self.assertAllClose(output, data ** 2 + np.sum(data, axis=0))
 
 
 if __name__ == "__main__":

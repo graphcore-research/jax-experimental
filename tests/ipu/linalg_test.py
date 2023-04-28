@@ -20,14 +20,15 @@ import jax
 
 
 def make_symmetric_matrix(rng, N: int, dtype: Any = np.float32) -> np.ndarray:
-    a = rng.rand(N, N).astype(dtype)
-    a = (a + a.T) * 0.5
-    return a
+  a = rng.rand(N, N).astype(dtype)
+  a = (a + a.T) * 0.5
+  return a
 
 
 class IpuLinalgTest(jtu.JaxTestCase):
   """Coverage test of JAX LAX linear algebra operators on IPU.
   """
+
   def setUp(self):
     super().setUp()
     self.rng = np.random.RandomState(42)
@@ -53,8 +54,8 @@ class IpuLinalgTest(jtu.JaxTestCase):
     a = make_symmetric_matrix(self.rng, 4)
     ipu_lu = jax.jit(jax.lax.linalg.lu, backend="ipu")
     with self.assertRaises(Exception):
-        # XLA custom call not yet implemented on IPU
-        ipu_lu(a)
+      # XLA custom call not yet implemented on IPU
+      ipu_lu(a)
 
   def test_linalg_qr(self):
     a = make_symmetric_matrix(self.rng, 4)

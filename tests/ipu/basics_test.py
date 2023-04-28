@@ -32,6 +32,7 @@ is_ipu_legacy_backend = not isinstance(jax.devices("ipu")[0], IpuPjRtDevice)
 
 
 class IpuBasicsTest(jtu.JaxTestCase):
+
   def setUp(self):
     super().setUp()
     self.is_ipu_model = config.FLAGS.jax_ipu_use_model
@@ -39,6 +40,7 @@ class IpuBasicsTest(jtu.JaxTestCase):
   def test_device_count(self):
     expected = os.getenv('JAX_IPU_DEVICE_COUNT')
     expected = int(expected) if expected else 1
+    expected = expected if expected > 0 else 1
     # Only testing on IPU model for device count.
     if self.is_ipu_model:
       assert jax.device_count(backend='ipu') == expected
@@ -67,8 +69,9 @@ class IpuBasicsTest(jtu.JaxTestCase):
     d.client.compile(mhlo_code)
 
   def test_single_op_add(self):
-    def add(a,b):
-      return lax.add(a,b)
+
+    def add(a, b):
+      return lax.add(a, b)
 
     jit_add = jax.jit(fun=add, backend='ipu')
     a = np.array([0, 1, 2, 3], dtype=np.float32)
@@ -77,10 +80,11 @@ class IpuBasicsTest(jtu.JaxTestCase):
     self.assertAllClose(c, a + b)
 
   def test_asynchronous_backend(self):
+
     @partial(jax.jit, backend="ipu")
     def fn(x):
-        y = x * x
-        return y * (y - x)
+      y = x * x
+      return y * (y - x)
 
     N = 1000000
     x = np.arange(N).astype(np.float32)
@@ -90,55 +94,55 @@ class IpuBasicsTest(jtu.JaxTestCase):
     num_iters = 10
     start = time.perf_counter()
     for _ in range(num_iters):
-        x = fn(x)
+      x = fn(x)
     async_timing = time.perf_counter() - start
     x.block_until_ready()
 
     start = time.perf_counter()
     for _ in range(num_iters):
-        x = fn(x).block_until_ready()
+      x = fn(x).block_until_ready()
     block_timing = time.perf_counter() - start
 
     # At least 10x faster without blocking.
     self.assertLessEqual(async_timing * 10, block_timing)
 
   def test_lax_argmin_argmax(self):
+
     @partial(jax.jit, backend="ipu")
     def argminmax(v):
-      return (lax.argmin(v, axis=0, index_dtype=np.int32),
-              lax.argmax(v, axis=0, index_dtype=np.int32))
+      return (
+          lax.argmin(v, axis=0,
+                     index_dtype=np.int32), lax.argmax(v, axis=0, index_dtype=np.int32)
+      )
 
     a = np.array([1, 0, 5, 3], dtype=np.float32)
     amin, amax = argminmax(a)
     assert amin == 1
     assert amax == 2
 
-
-  @parameterized.parameters(
-      [
-          (np.uint32, 1),
-          (np.uint32, 32),
-          (np.int32, 32),
-          (np.uint8, 8),
-          # (np.uint16, 8), UINT16 not supported.
-          (np.uint64, 1),
-          (np.uint64, 64),
-      ]
-  )
+  @parameterized.parameters([
+      (np.uint32, 1),
+      (np.uint32, 32),
+      (np.int32, 32),
+      (np.uint8, 8),
+      # (np.uint16, 8), UINT16 not supported.
+      (np.uint64, 1),
+      (np.uint64, 64),
+  ])
   def test_lax_shift_ops(self, dtype, shift):
     shift = dtype(shift)
+
     @partial(jax.jit, backend="ipu")
     def shift_op(v):
-      return (lax.shift_left(v, shift),
-              lax.shift_right_logical(v, shift))
+      return (lax.shift_left(v, shift), lax.shift_right_logical(v, shift))
 
     a = np.array([0, 1, 3, 5], dtype=dtype)
     vleft, vright_log = shift_op(a)
     self.assertAllClose(vleft, np.left_shift(a, shift))
     self.assertAllClose(vright_log, np.right_shift(a, shift))
 
-
   def test_linear_layer(self):
+
     @partial(jax.jit, backend="ipu")
     def func(x, w, b):
       return jnp.matmul(w, x) + b
@@ -149,8 +153,8 @@ class IpuBasicsTest(jtu.JaxTestCase):
     r = func(x, w, b)
     self.assertAllClose(r, w @ x + b)
 
-
   def test_lax_sort(self):
+
     @partial(jax.jit, backend="ipu")
     def sort_fn(v):
       return lax.sort(v)
@@ -159,8 +163,8 @@ class IpuBasicsTest(jtu.JaxTestCase):
     asorted = sort_fn(a)
     self.assertAllClose(asorted, np.sort(a))
 
-
   def test_lax_sort_key_val(self):
+
     @partial(jax.jit, backend="ipu")
     def sort_key_val_fn(k, v):
       return lax.sort_key_val(k, v)

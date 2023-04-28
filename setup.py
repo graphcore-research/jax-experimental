@@ -11,11 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# This file has been modified by Graphcore Ltd.
 
 from distutils import spawn
 import subprocess
 import os
 import sys
+import glob
+import itertools
 
 from setuptools import setup, find_packages
 
@@ -55,6 +58,14 @@ def generate_proto(source):
 generate_proto("jax/experimental/australis/executable.proto")
 generate_proto("jax/experimental/australis/petri.proto")
 
+# IPU C++ extensions to include in the package.
+# Enable users to easily build their own custom primitives for IPU.
+# Using cppimport + on-the-fly compilation allows easier and faster development.
+cpp_extensions = [".h", ".hpp", ".c", ".cpp"]
+ipu_package_data_cpp_list = [glob.glob(f"jax/ipu/**/*{ext}", recursive=True) for ext in cpp_extensions]
+ipu_package_data_cpp = list(itertools.chain(*ipu_package_data_cpp_list))
+ipu_package_data_cpp = [f.replace("jax/", "") for f in ipu_package_data_cpp]
+
 setup(
     name='jax',
     version=__version__,
@@ -64,7 +75,7 @@ setup(
     author='JAX team',
     author_email='jax-dev@google.com',
     packages=find_packages(exclude=["examples"]),
-    package_data={'jax': ['py.typed']},
+    package_data={'jax': ['py.typed'] + ipu_package_data_cpp},
     python_requires='>=3.7',
     install_requires=[
         'absl-py',
@@ -73,6 +84,9 @@ setup(
         'scipy>=1.5',
         'typing_extensions',
         'etils[epath]',
+        # IPU additional dependencies.
+        'pybind11',
+        'cppimport',
     ],
     extras_require={
         # Minimum jaxlib version; used in testing.
