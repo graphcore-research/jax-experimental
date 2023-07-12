@@ -68,7 +68,7 @@ jobs:
       # Run IPU specific unit tests
       - name: Run JAX IPU unit tests
         run: |
-          JAX_IPU_DEVICE_COUNT=2 JAX_IPU_USE_MODEL=true JAX_IPU_MODEL_NUM_TILES=8 pytest --tb=short -vv --log-cli-level=INFO ./tests/ipu/
+          JAX_IPU_DEVICE_COUNT=2 JAX_IPU_USE_MODEL=true JAX_IPU_MODEL_NUM_TILES=16 pytest --tb=short -vv --log-cli-level=INFO ./tests/ipu/
       # Dockerized workflow known to create issues with self-hosted servers.
       # Solution is to fully cleanup the workspace for the next action.
       # See: https://stackoverflow.com/questions/70483902/how-to-actually-clean-up-the-repository-on-self-hosted-runner-after-github-actio
