@@ -145,3 +145,6 @@ from jax import tree_util as tree_util
 from jax import util as util
 
 import jax.lib  # TODO(phawkins): remove this export.
+
+# Import IPU backend specific improvements/features.
+import jax.ipu

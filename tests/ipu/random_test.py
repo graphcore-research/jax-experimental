@@ -26,7 +26,7 @@ class IpuRandomTest(jtu.JaxTestCase):
   See the main JAX `random_test.py` for full coverage.
   """
 
-  def testThreefry2x32(self):
+  def test__threefry2x32__consistent_outputs(self):
     # We test the hash by comparing to known values provided in the test code of
     # the original reference implementation of Threefry. For the values, see
     # https://github.com/DEShawResearch/Random123-Boost/blob/65e3d874b67aa7b3e02d5ad8306462f52d2079c0/libs/random/test/test_threefry.cpp#L30-L32
@@ -48,7 +48,7 @@ class IpuRandomTest(jtu.JaxTestCase):
     )
     self.assertEqual(expected, result_to_hex(result))
 
-  def testRngRandomBits(self):
+  def test__rng_random_bits__consistent_outputs(self):
     # Test specific outputs to ensure consistent random values between JAX versions.
     key = random.PRNGKey(1701)
 
@@ -77,3 +77,20 @@ class IpuRandomTest(jtu.JaxTestCase):
     else:
       expected64 = np.array([676898860, 3164047411, 4010691890], dtype=np.uint32)
     self.assertArraysEqual(bits64, expected64)
+
+  def test__rng_random_bits__different_sizes(self):
+    key = random.PRNGKey(1701)
+    sizes = (128, 1024, 65536, 1677721)
+
+    def random_bits_fn(key):
+      outputs = [jax._src.random._random_bits(key, 32, (N,)) for N in sizes]
+      return outputs
+
+    ipu_random_bits_fn = jax.jit(random_bits_fn, backend="ipu")
+    cpu_random_bits_fn = jax.jit(random_bits_fn, backend="cpu")
+
+    ipu_bits32 = ipu_random_bits_fn(key)
+    cpu_bits32 = cpu_random_bits_fn(key)
+    # Same results between IPU/CPU.
+    for v0, v1 in zip(ipu_bits32, cpu_bits32):
+      self.assertArraysEqual(v0, v1)
