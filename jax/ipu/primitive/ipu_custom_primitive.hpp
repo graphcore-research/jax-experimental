@@ -135,7 +135,7 @@ class PrimitiveInterface {
     is_stateless = metadata.is_stateless;                                     \
     is_hashable = metadata.is_hashable;                                       \
   }
-// Generate the main program C exported function `#opclsExport`.
+// Generate the IPU main program C exported function `#opclsExport`.
 #define IPU_JAX_PRIMITIVE_PROGRAM(opcls)                                     \
   extern "C" __attribute__((visibility("default"))) poplar::program::Program \
   CONCAT(opcls, Export)(                                                     \
@@ -143,6 +143,17 @@ class PrimitiveInterface {
       std::vector<poplar::Tensor>& outputs, const std::string& attributes,   \
       const std::string& debug_prefix) {                                     \
     return opcls::program(graph, inputs, outputs, attributes, debug_prefix); \
+  }
+// Generate the host callback C exported function `#opclsExport`.
+#define IPU_JAX_PRIMITIVE_HOST_CALLBACK(opcls)                             \
+  extern "C" __attribute__((visibility("default"))) void CONCAT(           \
+      opcls, Export)(const std::vector<const void*>& data,                 \
+                     const std::vector<std::uint32_t>& number_of_elements, \
+                     const std::vector<void*>& outputs,                    \
+                     const std::string& attributes,                        \
+                     const std::string& debugPrefix) {                     \
+    opcls::hostCallback(data, number_of_elements, outputs, attributes,     \
+                        debugPrefix);                                      \
   }
 // Generate the allocator C exported function `#opclsExport_allocator`.
 #define IPU_JAX_PRIMITIVE_ALLOCATOR(opcls)                                 \
@@ -158,6 +169,12 @@ class PrimitiveInterface {
 #define EXPORT_IPU_JAX_PRIMITIVE(opcls) \
   IPU_JAX_PRIMITIVE_METADATA(opcls);    \
   IPU_JAX_PRIMITIVE_PROGRAM(opcls);     \
+  IPU_JAX_PRIMITIVE_ALLOCATOR(opcls);
+
+// Export IPU JAX HOST callback as C functions in shared library.
+#define EXPORT_IPU_JAX_HOST_CALLBACK(opcls) \
+  IPU_JAX_PRIMITIVE_METADATA(opcls);        \
+  IPU_JAX_PRIMITIVE_HOST_CALLBACK(opcls);   \
   IPU_JAX_PRIMITIVE_ALLOCATOR(opcls);
 
 // Custom op API level default value.

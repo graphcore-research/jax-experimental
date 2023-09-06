@@ -1510,7 +1510,7 @@ def emit_python_callback(
   if platform in {"tpu"} and jax._src.lib.version < (0, 3, 15):
     raise ValueError(
         "`EmitPythonCallback` on TPU only supported on jaxlib >= 0.3.15")
-  if platform not in {"cpu", "cuda", "rocm", "tpu"}:
+  if platform not in {"cpu", "cuda", "rocm", "tpu", "ipu"}:
     raise ValueError(
         f"`EmitPythonCallback` not supported on {platform} backend.")
   backend = xb.get_backend(platform)
@@ -1557,6 +1557,7 @@ def emit_python_callback(
     ]
     operands = [token, *operands]
     result_types = [token_type()[0], *result_types]
+
   callback_descriptor, keepalive = (
       backend.get_emit_python_callback_descriptor(_wrapped_callback,
                                                   operand_shapes,
@@ -1567,16 +1568,29 @@ def emit_python_callback(
   result_type = ir.TupleType.get_tuple(result_types)
   call_target_name = ("xla_python_gpu_callback"
                      if platform in {"cuda", "rocm"} else "xla_python_cpu_callback")
-  result = mhlo.CustomCallOp(
-      [result_type],
-      callback_operands,
-      call_target_name=ir.StringAttr.get(call_target_name),
-      has_side_effect=ir.BoolAttr.get(has_side_effect),
-      api_version=i32_attr(2),
-      called_computations=ir.ArrayAttr.get([]),
-      backend_config=ir.StringAttr.get(str(callback_descriptor)),
-      operand_layouts=None,
-      result_layouts=None)
+
+  if platform == "ipu":
+    from jax.ipu.debug import ipu_debug_callback_custom_call
+
+    # IPU specific custom call path...
+    result = ipu_debug_callback_custom_call(
+        ctx,
+        [result_type],
+        callback_operands,
+        has_side_effect=has_side_effect,
+        callback_descriptor=callback_descriptor)
+  else:
+    # CPU/GPU path.
+    result = mhlo.CustomCallOp(
+        [result_type],
+        callback_operands,
+        call_target_name=ir.StringAttr.get(call_target_name),
+        has_side_effect=ir.BoolAttr.get(has_side_effect),
+        api_version=i32_attr(2),
+        called_computations=ir.ArrayAttr.get([]),
+        backend_config=ir.StringAttr.get(str(callback_descriptor)),
+        operand_layouts=None,
+        result_layouts=None)
   if sharding is not None:
     set_sharding(result, sharding)
   results = [
