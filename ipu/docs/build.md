@@ -17,7 +17,10 @@ python build/build.py --enable_ipu --bazel_options=--override_repository=org_ten
 ```
 The `override_repository` config is optional. By default, the build process will pull the experimental IPU TensorFlow XLA code from the repository https://github.com/graphcore-research/tensorflow-jax-experimental.
 
-If the build is successful, a binary `jaxlib` Python wheel will be produced in the `dist/` directory.
+If the build is successful, a binary `jaxlib` Python wheel will be produced in the `dist/` directory:
+```bash
+ pip uninstall -y jaxlib && pip install ./dist/jaxlib*.whl
+```
 
 
 For testing purposes, it is also possible to produce a build with debug info:

@@ -121,6 +121,8 @@ mlir.register_lowering(debug_callback_p, debug_callback_lowering,
                        platform="cpu")
 mlir.register_lowering(
     debug_callback_p, debug_callback_lowering, platform="gpu")
+mlir.register_lowering(
+    debug_callback_p, debug_callback_lowering, platform="ipu")
 if jaxlib.version >= (0, 3, 15):
   mlir.register_lowering(
       debug_callback_p, debug_callback_lowering, platform="tpu")
