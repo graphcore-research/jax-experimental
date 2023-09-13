@@ -20,6 +20,7 @@ from jax._src import test_util as jtu
 
 import jax
 import numpy as np
+from jaxlib.xla_extension import XlaRuntimeError
 
 
 class IpuDonateArgnumsTest(jtu.JaxTestCase):
@@ -95,6 +96,36 @@ class IpuDonateArgnumsTest(jtu.JaxTestCase):
     z = np.float32(5)
     raise SkipTest("IPU XLA not supporting interleaved donate argnums.")
     self.assertAllClose(f(x, y, z), (z + 3, y + 2, x + 1))
+
+  def testDonateBufferMultiFunctionsEdgeCaseFailure(self):
+
+    @partial(jax.jit, backend='ipu', donate_argnums=[1])
+    def f(x, y):
+      return x + 1, y + 2
+
+    @partial(jax.jit, backend='ipu', donate_argnums=[1])
+    def g(x, y):
+      return x + 3, y + 4
+
+    x0 = np.float32(0)
+    y0 = np.ones((2, 2), dtype=np.float32)
+
+    # TODO: investigate why it does not always reproduce.
+    # x1, y1 = f(x0, y0)
+    # with self.assertRaises(XlaRuntimeError):
+    #   # Strangely, JAX thinks the second call is a different function
+    #   # `jax.device_put` is not called, hence triggering reset of IPU SRAM.
+    #   # f(x1, y1)
+
+    x0, y0 = jax.device_put((x0, y0), jax.devices("ipu")[0])
+    x1, y1 = f(x0, y0)
+    with self.assertRaises(XlaRuntimeError):
+      # SRAM buffer y1 will be invalid for new function `g`.
+      g(x1, y1)
+
+    # Work when implicitely synced with host.
+    np.asarray(y1)
+    g(x1, y1)
 
 
 if __name__ == '__main__':
