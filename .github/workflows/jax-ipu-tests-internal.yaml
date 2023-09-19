@@ -37,7 +37,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64, 20.04, Ubuntu]
     strategy:
       matrix:
-        container: ["graphcore/pytorch:3.1.0-ubuntu-20.04", "graphcore/pytorch:3.2.0-ubuntu-20.04"]
+        container: ["graphcore/pytorch:3.2.0-ubuntu-20.04", "graphcore/pytorch:3.3.0-ubuntu-20.04"]
     container:
       image: ${{ matrix.container }}
     timeout-minutes: 10

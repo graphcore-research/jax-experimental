@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        container: ["graphcore/pytorch:3.1.0-ubuntu-20.04", "graphcore/pytorch:3.2.0-ubuntu-20.04"]
+        container: ["graphcore/pytorch:3.2.0-ubuntu-20.04", "graphcore/pytorch:3.3.0-ubuntu-20.04"]
     container:
       image: ${{ matrix.container }}
     timeout-minutes: 10
@@ -59,6 +59,8 @@ jobs:
       - name: Pip install pre-compiled JAXLIB & build JAX
         run: |
           ls ./wheels/
+          export PATH=$PATH:/opt/poplar/bin
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/poplar/lib
           export SDK_VERSION_SHORT="$(python ./build/ipu/get_poplar_sdk_version.py)"
           echo $SDK_VERSION_SHORT
           pip3 install -U numpy==1.23.5 scipy etils pytest
@@ -68,6 +70,10 @@ jobs:
       # Run IPU specific unit tests
       - name: Run JAX IPU unit tests
         run: |
+          export PATH=$PATH:/opt/poplar/bin
+          export CPATH=$CPATH:/opt/poplar/include
+          export LIBRARY_PATH=$LIBRARY_PATH:/opt/poplar/lib
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/poplar/lib
           JAX_IPU_DEVICE_COUNT=2 JAX_IPU_USE_MODEL=true JAX_IPU_MODEL_NUM_TILES=16 pytest --tb=short -vv --log-cli-level=INFO ./tests/ipu/
       # Dockerized workflow known to create issues with self-hosted servers.
       # Solution is to fully cleanup the workspace for the next action.
