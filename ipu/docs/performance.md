@@ -42,3 +42,12 @@ def update(i, opt_state, batch):
 will result into an IPU jitted function where only the `batch` is transfered at every call from host to device, and the `opt_state` remains on the IPU SRAM (after being transfered at the first call). The training loop does not require any additional modification.
 
 Please refer to the [MNIST example](../examples/mnist_classifier.py) for a full example of buffer donation on the IPU.
+
+
+## Write a custom op
+
+One of the joys of IPU programming is that programming at the tile level is often conceptually easier than on GPU systems because the IPU tile processor behaves like a conventional processor, programmed in C++.  See an example at
+[custom_primitive_test.py](../tests/ipu/primitive/custom_primitive_test.py).
+
+For further examples, see [demo_vertex.cpp](https://github.com/graphcore-research/tessellate-ipu/blob/main/examples/demo/demo_vertex.cpp) in the [TessellateIPU library](https://github.com/graphcore-research/tessellate-ipu).
+
