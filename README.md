@@ -5,12 +5,10 @@
 
 # :red_circle: **Non-official experimental** :red_circle: JAX on Graphcore IPU
 
-[![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_quickstart.ipynb)
 ![Continuous integration](https://github.com/graphcore-research/jax-experimental/actions/workflows/jax-ipu-tests-public.yaml/badge.svg)
 
 [**Install guide**](#installation)
 | [**Quickstart**](#minimal-example)
-| [**IPU JAX on Paperspace**](#jax-on-ipu-paperspace-notebooks)
 | [**Documentation**](#documentation)
 
 :red_circle: :warning: **Non-official experimental** :warning: :red_circle:
@@ -50,7 +48,7 @@ For SDK 3.2, please change `jaxlib` version to `jaxlib==0.3.15+ipu.sdk320`.
 
 ## Minimal example
 
-The following example can be run on [Graphcore IPU Paperspace](https://www.paperspace.com/graphcore) (or on a non-IPU machine using the IPU emulator):
+The following example can be run on an IPU (or on a non-IPU machine using the IPU emulator):
 
 ```python
 from functools import partial
@@ -65,16 +63,6 @@ data = np.array([1, -2, 3], np.float32)
 output = ipu_function(data)
 print(output, output.device())
 ```
-
-## JAX on IPU Paperspace notebooks
-
-* [JAX on IPU quickstart](ipu/examples/jax_ipu_quickstart.ipynb) [![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_quickstart.ipynb)
-* [JAX `pmap` on IPUs quickstart](ipu/examples/jax_ipu_pmap_quickstart.ipynb) [![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_pmap_quickstart.ipynb)
-* [Stateful linear regression on IPU](ipu/examples/jax_ipu_linear_regression.ipynb) [![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_linear_regression.ipynb)
-* [MNIST neural net training on IPU](ipu/examples/jax_ipu_mnist_neural_net_training.ipynb) [![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_mnist_neural_net_training.ipynb)
-* [GNN training on IPU](ipu/examples/jax_ipu_gnn_training.ipynb) [![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_gnn_training.ipynb)
-* [JAX `pjit` on IPUs quickstart](ipu/examples/jax_ipu_pjit_quickstart.ipynb) [![Run on Gradient](https://assets.paperspace.io/img/gradient-badge.svg)](https://console.paperspace.com/github/graphcore-research/jax-experimental?container=graphcore%2Fpytorch-jupyter%3A3.1.0-ubuntu-20.04&machine=Free-IPU-POD4&file=%2Fipu%2Fexamples%2Fjax_ipu_pjit_quickstart.ipynb)
-
 
 **Additional JAX on IPU examples:**
 
